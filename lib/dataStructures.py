@@ -45,12 +45,12 @@ def isTablatureData(inputString):
   #print("Checking '{}' for line type".format(inputString))
   # Assume tablature line if any digit
   if any(char.isdigit() for char in inputString):
-    #print("'{}' is a CHORD line, since it contains a number".format(inputString))
+    #print("'{}' is a tablature line, since it contains a number".format(inputString))
     return True
   # Assume tablature line if any character {/, #, (, ), }
-  chordSpecificCharacterString = r"/#"
-  if any(elem in inputString for elem in chordSpecificCharacterString):
-    #print("'{}' is a CHORD line, since it contains a chord specific character".format(inputString))
+  tablatureSpecificCharacterString = r"/#"
+  if any(elem in inputString for elem in tablatureSpecificCharacterString):
+    #print("'{}' is a tablature line, since it contains a tablature specific character".format(inputString))
     return True
   # Assume LYRIC line if any TEXT character OTHER THAN {a, b, c, d, e, f, g, h, b, x, m}
   lyricSpecificCharacterString = r"abcdefghbxm"
@@ -64,7 +64,7 @@ def isTablatureData(inputString):
   if any(elem in inputString for elem in lyricSpecialChars):
     #print("'{}' is a LYRIC line, since it contains lyric specific special characters".format(inputString))
     return False
-  # Else warn and assume chord line
+  # Else warn and assume tablature line
   #print("Unable to identify if '{}' is a lyric or tablature line. Assuming it is a tablature line. Please improve the isTablatureData function".format(inputString))
   return True
 
@@ -74,11 +74,11 @@ class Section:
   def __init__(self):
     # List of lines of lyrics strings
     self.lyrics = []
-    # List of lines of chord strings
-    self.chords = []
+    # List of lines of tablature strings
+    self.tablatures = []
     # section type string
     self.header = ""
-    # string of chord and lyric data
+    # string of tablature and lyric data
     self.rawData = ""
     # Flag for succesfully parsed
     self.isParsed = False
@@ -86,49 +86,49 @@ class Section:
   """!@brief Converts raw buffered data into separate Lyric and tablature lines
       @return None
   """
-  # Parses self.rawData into lyrics and chord strings
+  # Parses self.rawData into lyrics and tablature strings
   def parseMe(self):
     isFirstLine = True
-    # Input sections may have chord-only or lyric-only sections
-    # So we have to insert empty lines if we have subsequent chord or lyric lines
+    # Input sections may have tablature-only or lyric-only sections
+    # So we have to insert empty lines if we have subsequent tablature or lyric lines
     lines = self.rawData.split('\r\n')
     for line in lines:
-      # Determine lyric or chord line
-      currentIsChord = isTablatureData(line)
+      # Determine lyric or tablature line
+      currentIsTablature = isTablatureData(line)
       # Initially just fill in the first line correctly
       if isFirstLine:
         isFirstLine = False
-        if currentIsChord:
-          self.chords.append(line)
+        if currentIsTablature:
+          self.tablatures.append(line)
         else:
           self.lyrics.append(line)
       # We want alternating lines, so if the prev is of the same type
       # we need to insert an empty line of the other type
-      elif currentIsChord == prevWasChord:
-        if currentIsChord:
+      elif currentIsTablature == prevWasTablature:
+        if currentIsTablature:
           #print("Inserting empty Lyric line")
-          self.chords.append(line)
+          self.tablatures.append(line)
           self.lyrics.append("")
         else:
-          #print("Inserting empty Chord line")
+          #print("Inserting empty tablature line")
           self.lyrics.append(line)
-          self.chords.append("")
+          self.tablatures.append("")
       # also insert the current line
-      elif currentIsChord:
+      elif currentIsTablature:
         #print("Inserting empty Lyric line")
-        self.chords.append(line)
+        self.tablatures.append(line)
       else:
         self.lyrics.append(line)
       # move on to next line, save current type
-      prevWasChord = currentIsChord
+      prevWasTablature = currentIsTablature
     # Simple check to see if it probably exported correctly
-    if abs(len(self.lyrics) - len(self.chords)) > 1:
-      print("Unable to parse section, since there is a mismatch between the amount of chord and lyric lines.")
+    if abs(len(self.lyrics) - len(self.tablatures)) > 1:
+      print("Unable to parse section, since there is a mismatch between the amount of tablature and lyric lines.")
       return
     # Add a trailing empty line if necessary
-    elif len(self.lyrics) > len(self.chords):
-      self.chords.append("")
-    elif len(self.lyrics) < len(self.chords):
+    elif len(self.lyrics) > len(self.tablatures):
+      self.tablatures.append("")
+    elif len(self.lyrics) < len(self.tablatures):
       self.lyrics.append("")
     self.isParsed = True
 

@@ -16,12 +16,11 @@
 # - Support both paths to folders (like now) and to files directly
 #   When the input is a file, check if it is .txt and init it
 # - Input locations should be set in a config file (init to CWD, overwrite by CMD arguments)
+# - Use config supportedExtensions
 
 import lib.dataStructures
+import lib.config
 import os
-
-# For now manually whitelist folders to convert
-whitelist = ["/mnt/koios/Band/1-sugmesties", "/mnt/koios/Band/2-oefenen", "/mnt/koios/Band/3-uitgewerkt"]
 
 """!@brief Creates and inits a Song object
     This function creates a new Song object and sets the internal variables correctly
@@ -42,19 +41,22 @@ def initSong(filePath):
 """!@brief Returns the list of all Song objects created
     This function gets all supported input files in the specified input location(s)
     For each of these files it creates a Song object, ready to be read and then parsed
+    @param configObj configparser object
     @return list of intialised Song objects
 """
 def getSongObjects():
+  # Get config variables
+  configObj = lib.config.config['input']
   # path to song folders, which MAY contain a .txt source file
   txtFileLocations = []
   # list of Song objects
   songList = []
-  
   # go through all input locations. find .txt files.
-  for inputFolder in whitelist:
+  for inputFolder in configObj['inputfolders'].split(','):
+    #print("Walking directory '{}'".format(inputFolder))
     for root, dirs, files in os.walk(inputFolder):
       for name in files:
-        if(name[name.rfind('.'):] == ".txt"):
+        if(name[name.rfind('.'):] in configObj['supportedextensions']):
           filePath = os.path.join(root, name)
           #print("Found .txt file '{}'".format(filePath))
           txtFileLocations.append(filePath)

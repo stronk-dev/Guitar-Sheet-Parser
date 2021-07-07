@@ -24,9 +24,12 @@ import lib.chordFinder
 import lib.dataStructures
 import lib.initSongs
 import lib.transpose
+import lib.config
 import output2img
 
 def main():
+  # Init config file
+  lib.config.initConfig()
   # Init Song objects for all songs with compatible inputs
   songs = lib.initSongs.getSongObjects()
   # Convert all songs into sections
