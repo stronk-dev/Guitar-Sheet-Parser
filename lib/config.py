@@ -28,8 +28,10 @@ def initConfig():
     config.read('config.ini')
   # Else load defaults
   else:
-    config['input'] = {'inputFolders': "/mnt/koios/Band/1-sugmesties,/mnt/koios/Band/2-oefenen,/mnt/koios/Band/3-uitgewerkt",
-        'supportedExtensions': ".txt"}
+    config['input'] = {'inputFolders': os.getcwd(),
+        'supportedExtensions': ".txt",
+        'maxDepth': 3
+      }
     config['output'] = {'metafontfamily': 'fonts/CourierPrime-Regular.ttf',
         'metaFontWeight': 8,
         'lyricfontfamily': 'fonts/CourierPrime-Regular.ttf',
