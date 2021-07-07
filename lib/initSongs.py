@@ -1,11 +1,34 @@
-# !/usr/bin/python
-# Iterate through input folders and create a list of Song objects
+#!/usr/bin/env python3
+##
+# @file initSongs.py
+#
+# @brief Iterate through input folders and create a list of Song objects
+#
+# @section description Description
+# Initializes the Song objects for each supported input file found
+# Currently only supports .txt files, which are read as-is into a string
+#
+# @section notes Notes
+# - 
+#
+# @section todo TODO
+# - Set a max recursion depth on the os.walk function
+# - Support both paths to folders (like now) and to files directly
+#   When the input is a file, check if it is .txt and init it
+# - Input locations should be set in a config file (init to CWD, overwrite by CMD arguments)
+
 import lib.dataStructures
 import os
 
 # For now manually whitelist folders to convert
 whitelist = ["/mnt/koios/Band/1-sugmesties", "/mnt/koios/Band/2-oefenen", "/mnt/koios/Band/3-uitgewerkt"]
 
+"""!@brief Creates and inits a Song object
+    This function creates a new Song object and sets the internal variables correctly
+    Output folder name is derived from the name of the input file
+    @param filePath path to the input file
+    @return intialised Song object
+"""
 def initSong(filePath):
   thisSong = lib.dataStructures.Song()
   thisSong.inputFile = filePath
@@ -16,14 +39,18 @@ def initSong(filePath):
   #print("Finished init for input file '{}'.\nBase output folder is '{}'\nSong title is '{}'\n".format(thisSong.inputFile, thisSong.outputLocation, thisSong.title))
   return thisSong
  
-
+"""!@brief Returns the list of all Song objects created
+    This function gets all supported input files in the specified input location(s)
+    For each of these files it creates a Song object, ready to be read and then parsed
+    @return list of intialised Song objects
+"""
 def getSongObjects():
   # path to song folders, which MAY contain a .txt source file
   txtFileLocations = []
   # list of Song objects
   songList = []
   
-  # get all subdirectories
+  # go through all input locations. find .txt files.
   for inputFolder in whitelist:
     for root, dirs, files in os.walk(inputFolder):
       for name in files:
@@ -34,7 +61,7 @@ def getSongObjects():
         #else:
           #print("Skipping file '{}' for it is not a .txt file".format(name))
   
-  # go through all input locations. find .txt files. for each .txt file initSong. return list
+  # create list of Song objects
   while(txtFileLocations):
     filePath = txtFileLocations.pop()
     if (filePath != ""):

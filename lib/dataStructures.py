@@ -1,8 +1,24 @@
-# !/usr/bin/python
-# This file hosts the classes for storing song data
+#!/usr/bin/env python3
+##
+# @file dataStructures.py
+#
+# @brief This file contains the internal data structures required for each tablature file
+#
+# @section description Description
+# -
+#
+# @section notes Notes
+#
+# @section todo TODO
+# - Move helper functions like stripEmptyLines to a separate file for
+# - Move read functions to separate input functions (also to support more types of inputs)
+
 import re
 
-# TODO: move to separate file with helper functions like this
+"""!@brief Removes empty lines and makes sure every line ends with \r\n
+    @param inputString raw txt input
+    @return string of parsed input
+"""
 def stripEmptyLines(inputString):
   nonEmptyLines = ""
   lines = inputString.split("\n")
@@ -10,20 +26,28 @@ def stripEmptyLines(inputString):
     if line.strip() != "":
       nonEmptyLines += line + "\r\n"
   return nonEmptyLines
-# read .txt input TODO: move to separate input functions if we want to support multiple types of inputs some day, like web or PDF 
+
+"""!@brief Opens a .txt file and loads it's contents into buffer
+    @param inputFile path to .txt file
+    @return .txt file raw contents
+"""
 def readSourceFile(inputFile):
   with open(inputFile, 'r') as file:
     return file.read()
-    
-def isChordType(inputString):
+
+"""!@brief Returns whether the string is a line of lyrics or a line of tablature data
+    @param inputString single line of text
+    @return True if it is tablature data, False if it is lyric data
+"""
+def isTablatureData(inputString):
   if not inputString:
     return
   #print("Checking '{}' for line type".format(inputString))
-  # Assume CHORD line if any NUMBER character
+  # Assume tablature line if any digit
   if any(char.isdigit() for char in inputString):
     #print("'{}' is a CHORD line, since it contains a number".format(inputString))
     return True
-  # Assume CHORD line if any character {/, #, (, ), }
+  # Assume tablature line if any character {/, #, (, ), }
   chordSpecificCharacterString = r"/#"
   if any(elem in inputString for elem in chordSpecificCharacterString):
     #print("'{}' is a CHORD line, since it contains a chord specific character".format(inputString))
@@ -41,10 +65,11 @@ def isChordType(inputString):
     #print("'{}' is a LYRIC line, since it contains lyric specific special characters".format(inputString))
     return False
   # Else warn and assume chord line
-  #print("Unable to identify if '{}' is a lyric or chord line. Assuming it is a chord line. Please improve the isChordType function".format(inputString))
+  #print("Unable to identify if '{}' is a lyric or tablature line. Assuming it is a tablature line. Please improve the isTablatureData function".format(inputString))
   return True
-  
 
+"""!@brief Class containing Section specific data
+"""
 class Section:
   def __init__(self):
     # List of lines of lyrics strings
@@ -58,6 +83,9 @@ class Section:
     # Flag for succesfully parsed
     self.isParsed = False
     
+  """!@brief Converts raw buffered data into separate Lyric and tablature lines
+      @return None
+  """
   # Parses self.rawData into lyrics and chord strings
   def parseMe(self):
     isFirstLine = True
@@ -66,7 +94,7 @@ class Section:
     lines = self.rawData.split('\r\n')
     for line in lines:
       # Determine lyric or chord line
-      currentIsChord = isChordType(line)
+      currentIsChord = isTablatureData(line)
       # Initially just fill in the first line correctly
       if isFirstLine:
         isFirstLine = False
@@ -91,20 +119,21 @@ class Section:
         self.chords.append(line)
       else:
         self.lyrics.append(line)
-        
+      # move on to next line, save current type
       prevWasChord = currentIsChord
-    # Simple check to see if it worked
+    # Simple check to see if it probably exported correctly
     if abs(len(self.lyrics) - len(self.chords)) > 1:
       print("Unable to parse section, since there is a mismatch between the amount of chord and lyric lines.")
       return
-    # Add a final empty line if necessary
+    # Add a trailing empty line if necessary
     elif len(self.lyrics) > len(self.chords):
       self.chords.append("")
     elif len(self.lyrics) < len(self.chords):
       self.lyrics.append("")
     self.isParsed = True
-    
-    
+
+"""!@brief Class containing Song specific data
+""" 
 class Song:
   def __init__(self):
     # Src file
@@ -122,14 +151,16 @@ class Song:
     # Flag for succesfully parsed
     self.isParsed = False
     
-  # Parses self.rawData into Section objects and metadata
+  """!@brief Parses self.rawData into Section objects and metadata
+      @return None
+  """
   def parseMe(self):
-    # Fill raw data
+    # Get raw data
     self.rawData = readSourceFile(self.inputFile)
     # Clean up input
     parseData = stripEmptyLines(self.rawData)
     #print("Clean data='{}'\n".format(parseData))
-    # While !EOF: build sections (untill []).
+    # While not EOF: build sections untill new section found.
     delimiterIndex = parseData.find("[")
     if delimiterIndex == -1:
       print("Cannot parse input file, since it is not delimited by '[<sectionName>]' entries")
@@ -140,20 +171,21 @@ class Song:
     parseData = parseData[delimiterIndex:]
     # We are now at the start of the first section, at the '[' character
     while parseData:
+      # Init new Section object
       thisSection = Section()
-      # Get first line
+      # Get header on the first line
       delimiterIndex = parseData.find("]\r\n")
       if delimiterIndex == -1:
         print("Cannot parse input file, delimitor did not match '[<sectionName>]'")
         return
-      # Set header to first line
+      # Skip the ']\r\n' characters
       thisSection.header = parseData[:delimiterIndex+3]
       parseData = parseData[delimiterIndex+3:]
       # Find next section
       delimiterIndex = parseData.find("[")
       # If EOF, current buffer is final section
       if delimiterIndex == -1:
-        # Set current section data to remaining buffer
+        # Set thisSection's data to remaining buffer
         thisSection.rawData = parseData
         parseData = ""
       else:
