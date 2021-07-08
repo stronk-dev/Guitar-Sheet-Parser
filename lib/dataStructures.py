@@ -14,6 +14,8 @@
 # - Move read functions to separate input functions (also to support more types of inputs)
 
 import re
+import lib.config
+from PIL import ImageFont
 
 """!@brief Removes empty lines and makes sure every line ends with \r\n
     @param inputString raw txt input
@@ -82,12 +84,43 @@ class Section:
     self.rawData = ""
     # Flag for succesfully parsed
     self.isParsed = False
+    # Expected dimensions of this section
+    self.expectedWidth = -1
+    self.expectedHeight = -1
+
+  """!@brief Calculates dimensions of rendered text
+    This function calculates the dimensions of each line of text
+    the section contains and sets the internal variables
+    @param section lib.dataStructures.Section object
+    @return None
+  """
+  def calculateSectionDimensions(self, fontTablature, fontLyrics):
+    lineIterator = 0
+    amountOfLines = len(self.lyrics)
+    heightSum = 0
+    maxWidth = 0
+    # consider section title
+    headerWidth, headerHeight = fontTablature.getsize(self.header)
+    heightSum += headerHeight
+    maxWidth = headerWidth
+    while lineIterator < amountOfLines:
+      # Get chord&lyric line dimensions
+      lyricTextWidth, lyricTextHeight = fontLyrics.getsize(self.lyrics[lineIterator])
+      tablatureTextWidth, chordTextHeight = fontTablature.getsize(self.tablatures[lineIterator])
+      heightSum += lyricTextHeight + chordTextHeight
+      if lyricTextWidth > maxWidth:
+        maxWidth = lyricTextWidth
+      if tablatureTextWidth > maxWidth:
+        maxWidth = tablatureTextWidth
+      lineIterator += 1
+    self.expectedWidth = maxWidth
+    self.expectedHeight = heightSum
     
   """!@brief Converts raw buffered data into separate Lyric and tablature lines
       @return None
   """
   # Parses self.rawData into lyrics and tablature strings
-  def parseMe(self):
+  def initSections(self):
     isFirstLine = True
     # Input sections may have tablature-only or lyric-only sections
     # So we have to insert empty lines if we have subsequent tablature or lyric lines
@@ -150,11 +183,51 @@ class Song:
     self.rawData = ""
     # Flag for succesfully parsed
     self.isParsed = False
+    configObj = lib.config.config['output']
+    self.topMargin = int(configObj['topMargin'])
+    self.fontColour = tuple(int(var) for var in configObj['fontColour'].split(','))
+    self.backgroundColour = tuple(int(var) for var in configObj['backgroundColour'].split(','))
+    self.metadataColour = tuple(int(var) for var in configObj['metadataColour'].split(','))
+    self.imageWidth = int(configObj['imageWidth'])
+    self.imageHeight = int(configObj['imageHeight'])
+    self.leftMargin = int(configObj['leftMargin'])
+    self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
+    self.fontSize = int(configObj['songFontWeight'])
+    self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
+    self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
+    self.configObj = configObj
+
+  """!@brief Calculates the expected dimensions of all sections
+    @return None
+  """
+  def prerenderSections(self):
+    for section in self.sections:
+      section.calculateSectionDimensions(self.fontTablature, self.fontLyrics)
+
+  """!@brief Checks whether we are overflowing on the width of the page
+    @return True if everything OK, False if overflowing
+  """
+  def checkOverflowX(self):
+    for section in self.sections:
+      if section.expectedWidth > self.imageWidth:
+        return False
+    return True
+
+  """!@brief Resizes all sections by a specified amount
+    Also recalculates all section sizes afterwards
+    @param mutator amount of fontSize to add/dec from current font size
+    @return None
+  """
+  def resizeAllSections(self, mutator):
+    self.fontSize += mutator
+    self.fontLyrics = ImageFont.truetype(self.configObj['lyricfontfamily'], self.fontSize)
+    self.fontTablature = ImageFont.truetype(self.configObj['tablaturefontfamliy'], self.fontSize)
+    self.prerenderSections()
     
   """!@brief Parses self.rawData into Section objects and metadata
       @return None
   """
-  def parseMe(self):
+  def initSections(self):
     # Get raw data
     self.rawData = readSourceFile(self.inputFile)
     # Clean up input
@@ -194,7 +267,7 @@ class Song:
         #print("set rawData of '{}' to this section".format(thisSection.rawData))
         parseData = parseData[delimiterIndex:]
       # Finally parse section data
-      thisSection.parseMe()
+      thisSection.initSections()
       if thisSection.isParsed:
         self.sections.append(thisSection)
       else:
