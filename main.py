@@ -37,17 +37,17 @@ def main():
     print("Start parsing of file '{}'...".format(song.inputFile)) 
     # Initialise internal data structures
     song.initSections()
-    # Prerender: calculate the expected dimensions for each section
-    song.prerenderSections()
-    # While we overflow on X: resize all sections down and recalculate
-    while not song.checkOverflowX():
-      #print("Overflowing on width of the page. Decreasing font size by 2...")
-      song.resizeAllSections(-2)
+    # Fit all sections on each page, resizes down if it does not fit on width
+    song.fitSectionsByWidth()
+    # Prerender: calculate Pages, and move sections into Pages
+    song.sectionsToPages()
+    # Optimalisation: check for whitespace, check verhouding of whitespace&first section on next page
+    # TODO
     # Parse as PNG a4
     if song.isParsed:
       # Create subdirectory where we will output our images
       targetDirectory = song.outputLocation + "-a4-png"
-      print("Successfully parsed file. Writing output to '{}'".format(song.inputFile, targetDirectory)) 
+      print("Successfully parsed file. Writing output to '{}'".format(targetDirectory)) 
       # Write out metadata and sections, as many as can fit on one page
       output2img.outputToImage(targetDirectory, song)
 

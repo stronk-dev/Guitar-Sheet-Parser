@@ -89,9 +89,6 @@ class Section:
     self.expectedHeight = -1
 
   """!@brief Calculates dimensions of rendered text
-    This function calculates the dimensions of each line of text
-    the section contains and sets the internal variables
-    @param section lib.dataStructures.Section object
     @return None
   """
   def calculateSectionDimensions(self, fontTablature, fontLyrics):
@@ -165,6 +162,13 @@ class Section:
       self.lyrics.append("")
     self.isParsed = True
 
+"""!@brief Class containing Sections which fit on 1 page
+"""
+class Page:
+  def __init__(self):
+    self.sections = []
+    self.totalHeight = -1
+
 """!@brief Class containing Song specific data
 """ 
 class Song:
@@ -179,8 +183,12 @@ class Song:
     self.sections = []
     # Meta info: the text before the first section
     self.metadata = ""
+    self.metadataWidth = -1
+    self.metadataHeight = -1
     # String of entire input
     self.rawData = ""
+    # List of pages, which contain sections which fit on a page
+    self.pages = []
     # Flag for succesfully parsed
     self.isParsed = False
     configObj = lib.config.config['output']
@@ -197,21 +205,25 @@ class Song:
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
     self.configObj = configObj
 
-  """!@brief Calculates the expected dimensions of all sections
+
+  """!@brief Calculates dimensions of metadata
+    @param section lib.dataStructures.Section object
     @return None
   """
-  def prerenderSections(self):
-    for section in self.sections:
-      section.calculateSectionDimensions(self.fontTablature, self.fontLyrics)
-
-  """!@brief Checks whether we are overflowing on the width of the page
-    @return True if everything OK, False if overflowing
-  """
-  def checkOverflowX(self):
-    for section in self.sections:
-      if section.expectedWidth > self.imageWidth:
-        return False
-    return True
+  def calculateMetadataDimensions(self):
+    # metadata starts topMargin removed from top
+    currentHeight = self.topMargin
+    maxWidth = 0
+    for line in self.metadata.split('\n'):
+      line = line.rstrip()
+      if not line:
+        continue
+      metadataTextWidth, metadataTextHeight = self.fontMetadata.getsize(line)
+      if metadataTextWidth > maxWidth:
+        maxWidth = metadataTextWidth
+      currentHeight += metadataTextHeight
+    self.metadataWidth = maxWidth
+    self.metadataHeight = currentHeight
 
   """!@brief Resizes all sections by a specified amount
     Also recalculates all section sizes afterwards
@@ -223,6 +235,63 @@ class Song:
     self.fontLyrics = ImageFont.truetype(self.configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(self.configObj['tablaturefontfamliy'], self.fontSize)
     self.prerenderSections()
+
+  """!@brief Calculates the expected dimensions of all sections
+    @return None
+  """
+  def prerenderSections(self):
+    self.calculateMetadataDimensions()
+    for section in self.sections:
+      section.calculateSectionDimensions(self.fontTablature, self.fontLyrics)
+
+  """!@brief Calculates the expected dimensions of all sections
+    @return None
+  """
+  def fitSectionsByWidth(self):
+    self.prerenderSections()
+    while not self.checkOverflowX():
+      #print("Overflowing on width of the page. Decreasing font size by 2...")
+      self.resizeAllSections(-2)
+
+  """!@brief Checks whether we are overflowing on the width of the page
+    @return True if everything OK, False if overflowing
+  """
+  def checkOverflowX(self):
+    for section in self.sections:
+      if section.expectedWidth > self.imageWidth:
+        return False
+    return True
+
+  """!@brief Fits current sections into pages
+    @return None
+  """
+  def sectionsToPages(self):
+    self.prerenderSections()
+    # First page contains metadata
+    currentHeight = self.topMargin
+    currentHeight += self.metadataHeight
+    currentHeight += self.topMargin
+    curPage = Page()
+    # Now fit all sections
+    for section in self.sections:
+      if (section.expectedHeight == -1 or section.expectedWidth == -1):
+        print("Warning: this file was not processed correctly. The expected dimensions are not set")
+      # See if the section would fit on the current page - if it does not, we have a filled page
+      if currentHeight + section.expectedHeight > self.imageHeight:
+        curPage.totalHeight = currentHeight
+        self.pages.append(curPage)
+        currentHeight = self.topMargin
+        curPage = Page()
+      # Add setion header size and size of lines of data
+      headerWidth, headerHeight = self.fontTablature.getsize(section.header)
+      currentHeight += headerHeight
+      currentHeight += section.expectedHeight
+      curPage.sections.append(section)
+      # Margin between each section
+      currentHeight += self.topMargin
+    # No more sections left, so the current buffered image is ready to be written to file
+    curPage.totalHeight = currentHeight
+    self.pages.append(curPage)
     
   """!@brief Parses self.rawData into Section objects and metadata
       @return None

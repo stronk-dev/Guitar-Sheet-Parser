@@ -54,50 +54,44 @@ def outputToImage(folderLocation, songObj):
     currentHeight += metadataTextHeight
   # Margin between metadata and the first section
   currentHeight += songObj.topMargin
-  # Iterate over each section
-  # NOTE: sections might be split into lists of pages containing a list of sections
-  #       This change will occur when we add an arranger which resizes sections to fit pages better
-  for section in songObj.sections:
-    # Reset section specific variables
-    lineIterator = 0
-    amountOfLines = len(section.lyrics)
-    if (amountOfLines != len(section.tablatures)):
-      print("Cannot write this section to file, since it was not processed correctly. There are {} tablature lines and {} lyric lines. Aborting...".format(len(section.chords), amountOfLines))
-      return
-    if (section.expectedHeight == -1 or section.expectedWidth == -1):
-      print("Cannot write this section to file, since it was not processed correctly. The expected dimensions are not set. Aborting...")
-      return
-    # See if the section would fit on the current page - if it does not, write current buffered image & make the next image ready
-    if currentHeight + section.expectedHeight > songObj.imageHeight:
-      #print("overflow! starting with a new image")
-      outputLocation = folderLocation + "/"  + str(imageNumber) + ".png"
-      imageNumber += 1
-      a4image.save(outputLocation)
-      currentHeight = songObj.topMargin
-      a4image = Image.new('RGB',(songObj.imageWidth, songObj.imageHeight),(songObj.backgroundColour))
-      draw = ImageDraw.Draw(a4image)
-    # write section title
-    headerWidth, headerHeight = songObj.fontTablature.getsize(section.header)
-    draw.text((songObj.leftMargin,currentHeight), section.header, fill=songObj.fontColour, font=songObj.fontTablature)
-    currentHeight += headerHeight
-    # Write each line tablature&lyric data
-    while lineIterator < amountOfLines:
-      #print("Printing tablatures line {} and lyrics line {}".format(section.tablatures[lineIterator], section.lyrics[lineIterator]))
-      # Get tablatures&lyric line
-      lyricTextWidth, lyricTextHeight = songObj.fontLyrics.getsize(section.lyrics[lineIterator])
-      tablatureTextWidth, tablatureTextHeight = songObj.fontTablature.getsize(section.tablatures[lineIterator])
-      # add to image file
-      draw.text((songObj.leftMargin,currentHeight), section.tablatures[lineIterator], fill=songObj.fontColour,  font=songObj.fontTablature)
-      currentHeight += tablatureTextHeight
-      draw.text((songObj.leftMargin,currentHeight), section.lyrics[lineIterator], fill=songObj.fontColour, font=songObj.fontLyrics)
-      currentHeight += lyricTextHeight
-      lineIterator += 1
-      #print("currentheight={}".format(currentHeight))
-    # Margin between each section
-    currentHeight += songObj.topMargin
-  # No more sections left, so the current buffered image is ready to be written to file
-  outputLocation = folderLocation + "/" + str(imageNumber) + ".png"
-  a4image.save(outputLocation)
+  # Draw all pages
+  for page in songObj.pages:
+    for section in page.sections:
+      # Reset section specific variables
+      lineIterator = 0
+      amountOfLines = len(section.lyrics)
+      if (amountOfLines != len(section.tablatures)):
+        print("Cannot write this section to file, since it was not processed correctly. There are {} tablature lines and {} lyric lines. Aborting...".format(len(section.chords), amountOfLines))
+        return
+      if (section.expectedHeight == -1 or section.expectedWidth == -1):
+        print("Cannot write this section to file, since it was not processed correctly. The expected dimensions are not set. Aborting...")
+        return
+      # write section title
+      headerWidth, headerHeight = songObj.fontTablature.getsize(section.header)
+      draw.text((songObj.leftMargin,currentHeight), section.header, fill=songObj.fontColour, font=songObj.fontTablature)
+      currentHeight += headerHeight
+      # Write each line tablature&lyric data
+      while lineIterator < amountOfLines:
+        #print("Printing tablatures line {} and lyrics line {}".format(section.tablatures[lineIterator], section.lyrics[lineIterator]))
+        # Get tablatures&lyric line
+        lyricTextWidth, lyricTextHeight = songObj.fontLyrics.getsize(section.lyrics[lineIterator])
+        tablatureTextWidth, tablatureTextHeight = songObj.fontTablature.getsize(section.tablatures[lineIterator])
+        # add to image file
+        draw.text((songObj.leftMargin,currentHeight), section.tablatures[lineIterator], fill=songObj.fontColour,  font=songObj.fontTablature)
+        currentHeight += tablatureTextHeight
+        draw.text((songObj.leftMargin,currentHeight), section.lyrics[lineIterator], fill=songObj.fontColour, font=songObj.fontLyrics)
+        currentHeight += lyricTextHeight
+        lineIterator += 1
+        #print("currentheight={}".format(currentHeight))
+      # Margin between each section
+      currentHeight += songObj.topMargin
+    # Got all sections in the page, so write it
+    outputLocation = folderLocation + "/"  + str(imageNumber) + ".png"
+    a4image.save(outputLocation)
+    a4image = Image.new('RGB',(songObj.imageWidth, songObj.imageHeight),(songObj.backgroundColour))
+    draw = ImageDraw.Draw(a4image)
+    currentHeight = songObj.topMargin
+    imageNumber += 1
     
   
   
