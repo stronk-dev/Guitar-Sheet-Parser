@@ -199,6 +199,7 @@ class Song:
     self.imageWidth = int(configObj['imageWidth'])
     self.imageHeight = int(configObj['imageHeight'])
     self.leftMargin = int(configObj['leftMargin'])
+    self.rightMargin = int(configObj['rightMargin'])
     self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
     self.fontSize = int(configObj['songFontWeight'])
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
@@ -258,7 +259,7 @@ class Song:
   """
   def checkOverflowX(self):
     for section in self.sections:
-      if section.expectedWidth > self.imageWidth:
+      if section.expectedWidth > self.imageWidth - self.leftMargin - self.rightMargin:
         return False
     return True
 

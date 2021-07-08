@@ -42,7 +42,8 @@ def initConfig():
         'fontColour': '0,0,0',
         'metadataColour': '128,128,128',
         'topMargin': 10,
-        'leftMargin': 25
+        'leftMargin': 25,
+        'rightMargin': 25
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:
