@@ -207,10 +207,13 @@ class Song:
     # 0.03937 pixels per minimeter per ppi
     self.imageWidth = int(self.ppi * A4['width'] * 0.03937)
     self.imageHeight = int(self.ppi * A4['height'] * 0.03937)
+    # With a PPI of 72, a font size of 14-18 is a good starting point (PPI / 4 or 4.5)
+    # Since font size is then shrunk and grown to fit whitespace we do not need to be as accurate
+    # PPI of 144 -> fontSize of 32
+    self.fontSize = int(self.ppi / 4.5)
+    self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
     self.leftMargin = int(configObj['leftMargin'])
     self.rightMargin = int(configObj['rightMargin'])
-    self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
-    self.fontSize = int(configObj['songFontWeight'])
     self.originalFontSize = int(configObj['songFontWeight'])
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
@@ -286,7 +289,7 @@ class Song:
     self.sectionsToPages()
     currentPageAmount = len(self.pages)
     # Increase fontSize as long as we do not add a page
-    while currentPageAmount <= targetPageAmount:
+    while currentPageAmount <= targetPageAmount and self.checkOverflowX():
       self.resizeAllSections(+1)
       self.sectionsToPages()
       currentPageAmount = len(self.pages)
@@ -312,9 +315,6 @@ class Song:
       return False
     # Stop resizing if the font size is becoming too small
     fontDifference = self.originalFontSize - self.fontSize
-    if fontDifference > self.originalFontSize / 2:
-      print("The original fontSize has already decreased from {} to {}, so we will stop resizing the image down".format(self.originalFontSize, self.fontSize))
-      return False
     # Stop resizing if we are creating too much widespace on the width
     smallestWhitespace = self.imageHeight
     biggestWhitespace = -1

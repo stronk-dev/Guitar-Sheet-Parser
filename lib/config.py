@@ -37,7 +37,6 @@ def initConfig():
         'metaFontWeight': 16,
         'lyricfontfamily': 'fonts/CourierPrime-Regular.ttf',
         'tablaturefontfamliy': 'fonts/CourierPrime-Bold.ttf',
-        'songFontWeight': 32,
         'imageppi': 144,
         'backgroundColour': '255,255,255',
         'fontColour': '0,0,0',
