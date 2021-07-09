@@ -232,11 +232,11 @@ class Song:
     self.lowestWhitespaceOnWidthRatioAllowed = float(configObj['lowestWhitespaceOnWidthRatioAllowed'])
     # Some sections are very small, so the highest whitespace can be very large. 
     # It is advised to keep this value relatively small
-    self.hightestWhitespaceOnWidthRatioAllowed = float(configObj['hightestWhitespaceOnWidthRatioAllowed'])
+    self.hightestWhitespaceOnWidthRatioAllowed = float(configObj['highestwhitespaceonwidthratioallowed'])
     # Strip empty lines from input or keep em
     self.keepEmptyLines = configObj['keepEmptyLines'] == '1'
     # Strip empty lines from input or keep em
-    self.writeMetadata = configObj['writemetadata'] == '1'
+    self.writeMetadata = configObj['writeheaderfile'] == '1'
 
 
   """!@brief Calculates dimensions of metadata

@@ -51,9 +51,9 @@ def initConfig():
         'rightMargin': 50,
         'tryToShrinkRatio' : 0.25,
         'lowestwhitespaceonwidthratioallowed': 0.90,
-        'hightestwhitespaceonwidthratioallowed': 0.40,
+        'highestwhitespaceonwidthratioallowed': 0.40,
         'keepEmptyLines': 1,
-        'writeMetaData': 0
+        'writeheaderfile': 0
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:
