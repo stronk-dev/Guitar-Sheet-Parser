@@ -72,7 +72,7 @@ def getSongObjects():
   # get all files we can find, then filter on supported extensions
   for inputFolder in configObj['inputfolders'].split(','):
     for filePath in walkDirectory(inputFolder, recursionDepth):
-      if ((filePath[filePath.find('.'):] == ".txt" ) and configObj['readtxt']) or ((filePath[filePath.find('.'):] == ".rawtxt" ) and configObj['readraw']):
+      if ((filePath[filePath.find('.'):] == ".txt" ) and configObj['readtxt'] == '1') or ((filePath[filePath.find('.'):] == ".rawtxt" ) and configObj['readraw'] == '1'):
         #print("Found supported file '{}'".format(filePath))
         txtFileLocations.append(filePath)
       #else:

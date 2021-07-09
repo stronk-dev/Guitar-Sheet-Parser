@@ -43,10 +43,14 @@ def main():
   for song in songs:
     print("Start parsing of file '{}'...".format(song.inputFile)) 
     # Initialise internal data structures
+    print("song file extension {}".format(song.fileExtension))
     if song.fileExtension == 'txt':
       song.initSections()
-    elif song.fileExtension == 'raw':
-      pass#song.initPreprocessed()
+    elif song.fileExtension == 'rawtxt':
+      song.initPreprocessed()
+    else:
+      print("File extension '{}' not supported. Skipping...".format(song.fileExtension))
+      continue
     # If input is .raw output. If output to raw is set, overwrite itself
     # ready quickly using rules
     if not song.isParsed:

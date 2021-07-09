@@ -409,7 +409,61 @@ class Song:
       @return None
   """
   def initPreprocessed(self):
-    pass
+    # Get raw data
+    self.rawData = readSourceFile(self.inputFile)
+    parseData = self.rawData
+    # While not EOF: build sections untill new section found.
+    delimiterIndex = parseData.find("[")
+    if delimiterIndex == -1:
+      print("Cannot parse input file, since it is not delimited by '[<sectionName>]' entries")
+      return
+    # Start with metadata
+    self.metadata = parseData[:delimiterIndex]
+    print("Set '{}' as metadata".format(self.metadata))
+    parseData = parseData[delimiterIndex:]
+    # We are now at the start of the first section, at the '[' character
+    lines = parseData.splitlines(True)
+    if not len(lines):
+      return
+    #print("We found {} lines of data".format(len(lines)))
+    # Init first section by popping the delimiter
+    thisSection = Section()
+    thisSection.header = lines.pop(0)
+    # First line is always tab->lyric
+    isTabLine = True
+    print("First header is '{}'".format(thisSection.header))
+    for line in lines:
+      # If it is a [header], it is a new section
+      if line[0] == '[':
+        # Store prev section
+        thisSection.initSections()
+        if thisSection.isParsed:
+          self.sections.append(thisSection)
+        else:
+          print("Aborting parse due to section not being parseable.")
+          return
+        # Reset, new section
+        thisSection = Section()
+        thisSection.header = line
+        #print("Header is '{}'".format(thisSection.header))
+        isTabLine = True
+      # Else is has lines in order tabline->lyricline->repeat
+      elif isTabLine:
+        #print("Adding Tabline is '{}'".format(line))
+        thisSection.tablatures.append(line)
+        isTabLine = False
+      else:
+        #print("Adding Lyricline is '{}'".format(line))
+        thisSection.lyrics.append(line)
+        isTabLine = True
+    # Add final section data
+    thisSection.initSections()
+    if thisSection.isParsed:
+      self.sections.append(thisSection)
+    else:
+      print("Aborting parse due to section not being parseable.")
+      return
+    self.isParsed = True
     
   """!@brief Parses self.rawData into Section objects and metadata
       @return None
