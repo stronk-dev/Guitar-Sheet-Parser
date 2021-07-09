@@ -184,6 +184,7 @@ class Song:
     self.inputFile = ""
     # Path to folder
     self.outputLocation = ""
+    self.fileExtension = ""
     # Title - based on input file
     self.title = ""
     # List of Section objects
@@ -216,7 +217,9 @@ class Song:
     self.rightMargin = int(configObj['rightMargin'])
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
-    self.configObj = configObj
+    self.fontFamilyLyrics = configObj['lyricfontfamily']
+    self.fontFamilyTablature = configObj['tablaturefontfamliy']
+
 
 
   """!@brief Calculates dimensions of metadata
@@ -247,8 +250,8 @@ class Song:
   def resizeAllSections(self, mutator):
     #print("Resizing font by {} to {}".format(mutator, self.fontSize))
     self.fontSize += mutator
-    self.fontLyrics = ImageFont.truetype(self.configObj['lyricfontfamily'], self.fontSize)
-    self.fontTablature = ImageFont.truetype(self.configObj['tablaturefontfamliy'], self.fontSize)
+    self.fontLyrics = ImageFont.truetype(self.fontFamilyLyrics, self.fontSize)
+    self.fontTablature = ImageFont.truetype(self.fontFamilyTablature, self.fontSize)
     self.prerenderSections()
 
   """!@brief Calculates the expected dimensions of all sections
@@ -378,6 +381,13 @@ class Song:
     # No more sections left, so the current buffered image is ready to be written to file
     curPage.totalHeight = currentHeight
     self.pages.append(curPage)
+
+  """!@brief Parses self.rawData into Section objects and metadata
+    Assumes the raw data is preprocessed, so it parses it using set rules instead of guessing line attributes
+      @return None
+  """
+  def initPreprocessed(self):
+    pass
     
   """!@brief Parses self.rawData into Section objects and metadata
       @return None
@@ -404,7 +414,7 @@ class Song:
       # Get header on the first line
       delimiterIndex = parseData.find("]\r\n")
       if delimiterIndex == -1:
-        print("Cannot parse input file, delimitor did not match '[<sectionName>]'")
+        print("Cannot parse input file, delimiter did not match '[<sectionName>]'")
         return
       # Skip the ']\r\n' characters
       thisSection.header = parseData[:delimiterIndex+3]

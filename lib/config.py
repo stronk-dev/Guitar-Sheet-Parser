@@ -30,8 +30,13 @@ def initConfig():
   # Else load defaults
   else:
     config['input'] = {'inputFolders': os.getcwd(),
-        'supportedExtensions': ".txt",
-        'maxDepth': 3
+        'maxDepth': 2,
+        'readtxt': 1,
+        'readraw': 1
+      }
+    config['options'] = {'exporttoimg': 1,
+        'exporttotxt': 0,
+        'exporttoraw': 0
       }
     config['output'] = {'metafontfamily': 'fonts/CourierPrime-Regular.ttf',
         'metaFontWeight': 16,

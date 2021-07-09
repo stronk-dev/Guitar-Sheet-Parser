@@ -26,37 +26,63 @@ import lib.initSongs
 import lib.transpose
 import lib.config
 import output2img
+import output2txt
 
 def main():
   # Init config file
   lib.config.initConfig()
   # Init Song objects for all songs with compatible inputs
   songs = lib.initSongs.getSongObjects()
+  # Get what programs we are going to run
+  configObj = lib.config.config['options']
+  exportToImg = configObj['exporttoimg']
+  exportToTxt = configObj['exporttotxt']
+  exportToRaw = configObj['exporttoraw']
+
   # Convert all songs into sections
   for song in songs:
     print("Start parsing of file '{}'...".format(song.inputFile)) 
     # Initialise internal data structures
-    song.initSections()
+    if song.fileExtension == 'txt':
+      song.initSections()
+    elif song.fileExtension == 'raw':
+      pass#song.initPreprocessed()
+    # If input is .raw output. If output to raw is set, overwrite itself
+    # ready quickly using rules
     if not song.isParsed:
       print("Song was not initialized correctly. Skipping...")
       continue
-    # Fit all sections on each page, resizes down if it does not fit on width
-    song.fitSectionsByWidth()
-    # Prerender: calculate Pages, and move sections into Pages
-    song.sectionsToPages()
-    # Optimalisation: try to fill whitespace
-    while song.canFillWhitespace():
-      print("Resizing down to fit whitespace more efficiently")
-      song.resizeAllSections(-1)
+
+    if exportToTxt:
+      # Create subdirectory where we will output our images
+      targetDirectory = song.outputLocation + "-txt"
+      print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
+      # Write out metadata and sections, as many as can fit on one page
+      output2txt.outputToTxt(targetDirectory, False, song)
+    if exportToRaw:
+      # Create subdirectory where we will output our images
+      targetDirectory = song.outputLocation + "-txt"
+      print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
+      # Write out metadata and sections, as many as can fit on one page
+      output2txt.outputToTxt(targetDirectory, True, song)
+    if exportToImg:
+      # Fit all sections on each page, resizes down if it does not fit on width
+      song.fitSectionsByWidth()
+      # Prerender: calculate Pages, and move sections into Pages
       song.sectionsToPages()
-    # Optimalisation: increase font size as long as the amount of pages does not increase or we cause an overflow on width
-    song.increaseWhileSameAmountOfPages()
-    # Parse as PNG a4
-    # Create subdirectory where we will output our images
-    targetDirectory = song.outputLocation + "-a4-png"
-    print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
-    # Write out metadata and sections, as many as can fit on one page
-    output2img.outputToImage(targetDirectory, song)
+      # Optimalisation: try to fill whitespace
+      while song.canFillWhitespace():
+        print("Resizing down to fit whitespace more efficiently")
+        song.resizeAllSections(-1)
+        song.sectionsToPages()
+      # Optimalisation: increase font size as long as the amount of pages does not increase or we cause an overflow on width
+      song.increaseWhileSameAmountOfPages()
+      # Parse as PNG a4
+      # Create subdirectory where we will output our images
+      targetDirectory = song.outputLocation + "-a4-png"
+      print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
+      # Write out metadata and sections, as many as can fit on one page
+      output2img.outputToImage(targetDirectory, song)
 
 if __name__ == "__main__":
   main()

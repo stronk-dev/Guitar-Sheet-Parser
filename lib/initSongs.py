@@ -27,6 +27,7 @@ import os
 def initSong(filePath):
   thisSong = lib.dataStructures.Song()
   thisSong.inputFile = filePath
+  thisSong.fileExtension = filePath[filePath.rfind('.')+1:]
   # set base folder name - depending on selected outputs the output folder name changes
   thisSong.outputLocation = filePath[:filePath.rfind('.')]
   # title is just the name of the .txt file
@@ -71,11 +72,11 @@ def getSongObjects():
   # get all files we can find, then filter on supported extensions
   for inputFolder in configObj['inputfolders'].split(','):
     for filePath in walkDirectory(inputFolder, recursionDepth):
-      if(filePath[filePath.rfind('.'):] in configObj['supportedextensions']):
-        #print("Found .txt file '{}'".format(filePath))
+      if ((filePath[filePath.find('.'):] == ".txt" ) and configObj['readtxt']) or ((filePath[filePath.find('.'):] == ".rawtxt" ) and configObj['readraw']):
+        #print("Found supported file '{}'".format(filePath))
         txtFileLocations.append(filePath)
       #else:
-        #print("Skipping file '{}' for it is not a .txt file".format(filePath))
+        #print("Skipping file '{}' for it is not a supported file".format(filePath))
   # create list of Song objects
   while(txtFileLocations):
     filePath = txtFileLocations.pop()

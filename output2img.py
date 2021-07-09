@@ -86,7 +86,7 @@ def outputToImage(folderLocation, songObj):
       # Margin between each section
       currentHeight += songObj.topMargin
     # Got all sections in the page, so write it
-    outputLocation = folderLocation + "/"  + str(imageNumber) + ".png"
+    outputLocation = folderLocation + "/" + songObj.title + '-' + str(imageNumber) + ".png"
     a4image.save(outputLocation)
     a4image = Image.new('RGB',(songObj.imageWidth, songObj.imageHeight),(songObj.backgroundColour))
     draw = ImageDraw.Draw(a4image)
