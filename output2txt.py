@@ -67,6 +67,10 @@ def outputToTxt(folderLocation, printRaw, songObj):
         output += tabline + '\r\n'
       if printRaw or len(lyricline):
         output += lyricline + '\r\n'
+      #If both lines are empty, it is an empty line
+      # So if printRaw == false, insert one empty line
+      if not printRaw and not len(tabline) and not len(lyricline):
+        output += '\r\n'
       lineIterator += 1
     # If exporting raw, do not include the whitespace between sections
     if not printRaw:

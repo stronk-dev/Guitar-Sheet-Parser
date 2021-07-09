@@ -24,11 +24,11 @@ A5 = {'width': 210, 'height': 148}
     @param inputString raw txt input
     @return string of parsed input
 """
-def stripEmptyLines(inputString):
+def stripEmptyLines(inputString, keepEmptyLines):
   nonEmptyLines = ""
   lines = inputString.split("\n")
   for line in lines:
-    if line.strip() != "":
+    if keepEmptyLines or line.strip() != "":
       nonEmptyLines += line + "\r\n"
   return nonEmptyLines
 
@@ -125,10 +125,13 @@ class Section:
     isFirstLine = True
     # Input sections may have tablature-only or lyric-only sections
     # So we have to insert empty lines if we have subsequent tablature or lyric lines
-    lines = self.rawData.split('\r\n')
+    lines = self.rawData.splitlines(True)
     for line in lines:
-      if not len(line):
-        continue
+      # Empty line whitespace
+      if not line:
+        self.lyrics.append("")
+        self.tablatures.append("") 
+        continue 
       # Determine lyric or tablature line
       currentIsTablature = isTablatureData(line)
       #print("Have line {} isTab={}, isLyric={}".format(line, currentIsTablature, not currentIsTablature))
@@ -230,7 +233,8 @@ class Song:
     # Some sections are very small, so the highest whitespace can be very large. 
     # It is advised to keep this value relatively small
     self.hightestWhitespaceOnWidthRatioAllowed = float(configObj['hightestWhitespaceOnWidthRatioAllowed'])
-
+    # Strip empty lines from input or keep em
+    self.keepEmptyLines = configObj['keepEmptyLines'] == '1'
 
 
   """!@brief Calculates dimensions of metadata
@@ -422,7 +426,7 @@ class Song:
     # Get raw data
     self.rawData = readSourceFile(self.inputFile)
     parseData = self.rawData
-    # While not EOF: build sections untill new section found.
+    # While not EOF: build sections until new section found.
     delimiterIndex = parseData.find("[")
     if delimiterIndex == -1:
       print("Cannot parse input file, since it is not delimited by '[<sectionName>]' entries")
@@ -482,9 +486,9 @@ class Song:
     # Get raw data
     self.rawData = readSourceFile(self.inputFile)
     # Clean up input
-    parseData = stripEmptyLines(self.rawData)
+    parseData = stripEmptyLines(self.rawData, self.keepEmptyLines)
     #print("Clean data='{}'\n".format(parseData))
-    # While not EOF: build sections untill new section found.
+    # While not EOF: build sections until new section found.
     delimiterIndex = parseData.find("[")
     if delimiterIndex == -1:
       print("Cannot parse input file, since it is not delimited by '[<sectionName>]' entries")

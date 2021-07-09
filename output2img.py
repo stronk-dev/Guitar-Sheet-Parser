@@ -46,7 +46,7 @@ def outputToImage(folderLocation, songObj):
   for line in songObj.metadata.split('\n'):
     # remove any unwanted characters from metadata
     line = line.rstrip()
-    if not line:
+    if not line and not songObj.keepEmptyLines:
       continue
     #print("meta line '{}'".format(line))
     metadataTextWidth, metadataTextHeight = songObj.fontMetadata.getsize(line)
@@ -83,8 +83,9 @@ def outputToImage(folderLocation, songObj):
         currentHeight += lyricTextHeight
         lineIterator += 1
         #print("currentheight={}".format(currentHeight))
-      # Margin between each section
-      currentHeight += songObj.topMargin
+      # If we stripped al whitespace, we need to add whitespace between sections
+      if not songObj.keepEmptyLines:
+        currentHeight += songObj.topMargin
     # Got all sections in the page, so write it
     outputLocation = folderLocation + "/" + songObj.title + '-' + str(imageNumber) + ".png"
     a4image.save(outputLocation)
