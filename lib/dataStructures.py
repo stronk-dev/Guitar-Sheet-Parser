@@ -221,8 +221,15 @@ class Song:
     self.metadataFontsize = int(configObj['metaFontWeight'])
     self.metadataFontFamily = configObj['metafontfamily']
     self.fontMetadata = ImageFont.truetype(self.metadataFontFamily, self.metadataFontsize)
-    # percentageof missing whitespace and total page height
+    # Allowed whitespace to total width ratios. Makes stuff smaller but fit on less pages, probably
+    # percentage of missing whitespace on total page height it wants before it tries to resize down
     self.tryToShrinkRatio = float(configObj['tryToShrinkRatio'])
+    # Setting this makes sure that the largest section on the page fills at least this percentage of total width
+    # The higher this is, the more it is allowed to shrink
+    self.lowestWhitespaceOnWidthRatioAllowed = float(configObj['lowestWhitespaceOnWidthRatioAllowed'])
+    # Some sections are very small, so the highest whitespace can be very large. 
+    # It is advised to keep this value relatively small
+    self.hightestWhitespaceOnWidthRatioAllowed = float(configObj['hightestWhitespaceOnWidthRatioAllowed'])
 
 
 
@@ -351,11 +358,11 @@ class Song:
             biggestWhitespace = whitespaceOnWidth
     # Sections vary in width, some are very small to begin with
     # Since (almost empty) lines will result in large whitespace sizes, we are less strict on checking that
-    if biggestWhitespace / self.imageWidth > 0.9:
+    if biggestWhitespace / self.imageWidth > self.lowestWhitespaceOnWidthRatioAllowed:
       print("Stopping resizing down, since the smallest section has {}% whitespace on the width of the image".format((biggestWhitespace / self.imageWidth )* 100))
       return False
     # But the largest section on the page should be able to fit at least half of the available page
-    if smallestWhitespace / self.imageWidth > 0.4:
+    if smallestWhitespace / self.imageWidth > self.hightestWhitespaceOnWidthRatioAllowed:
       print("Stopping resizing down, since we largest section has {}% whitespace on the width of the image".format((smallestWhitespace / self.imageWidth )* 100))
       return False
     # get first section on next page, if we have a next page to begin with
