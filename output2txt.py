@@ -39,6 +39,13 @@ def outputToTxt(folderLocation, printRaw, songObj):
     #print("Directory " , folderLocation ,  " already exists")
       
   output = ""
+  emptyLines = []
+  lyricLines = []
+  nonLyricLines = []
+  sectionHeaders = []
+  metadataLines = []
+
+  lineCounter = 0
   # Write metadata
   for line in songObj.metadata.split('\n'):
     # remove any unwanted characters from metadata
@@ -47,9 +54,14 @@ def outputToTxt(folderLocation, printRaw, songObj):
       continue
     #print("meta line '{}'".format(line))
     output += line + '\r\n'
+    metadataLines.append(lineCounter)
+    lineCounter += 1
+    
   # If exporting raw, do not include the whitespace between metadata and sections
   if not printRaw:
     output += '\r\n'
+    emptyLines.append(lineCounter)
+    lineCounter += 1
   # Draw all pages
   for section in songObj.sections:
     lineIterator = 0
@@ -59,32 +71,89 @@ def outputToTxt(folderLocation, printRaw, songObj):
       return
     # write section title
     output += section.header.rstrip() + '\r\n'
+    sectionHeaders.append(lineCounter)
+    lineCounter += 1
     # Write each line tablature&lyric data
     while lineIterator < amountOfLines:
       tabline = section.tablatures[lineIterator].rstrip()
       lyricline = section.lyrics[lineIterator].rstrip()
       if printRaw or len(tabline):
         output += tabline + '\r\n'
+        nonLyricLines.append(lineCounter)
+        lineCounter += 1
       if printRaw or len(lyricline):
         output += lyricline + '\r\n'
+        lyricLines.append(lineCounter)
+        lineCounter += 1
       #If both lines are empty, it is an empty line
       # So if printRaw == false, insert one empty line
       if not printRaw and not len(tabline) and not len(lyricline):
         output += '\r\n'
+        emptyLines.append(lineCounter)
+        lineCounter += 1
       lineIterator += 1
     # If exporting raw, do not include the whitespace between sections
     if not printRaw:
       output += '\r\n'
+      emptyLines.append(lineCounter)
+      lineCounter += 1
   # Finished, so print some trailing endlines
   outputLocation = ""
   if not printRaw:
-    output += '\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n'
     outputLocation = folderLocation + "/"  + songObj.title + ".txt"
   else:
     outputLocation = folderLocation + "/"  + songObj.title + ".rawtxt"
   with open(outputLocation, "w") as fileOut:
     fileOut.write(output)
+  if songObj.writeMetadata:
+    if printRaw:
+      outputLocation = folderLocation + "/"  + songObj.title + ".rawtxt.json"
+    else:
+      outputLocation = folderLocation + "/"  + songObj.title + ".txt.json"
 
+    with open(outputLocation, "w") as fileOut:
+      fileOut.write('{\r\n')
+      fileOut.write('  "emptyLines": [')
+      hasNext = len(emptyLines)
+      for entry in emptyLines:
+        hasNext -= 1
+        fileOut.write(str(entry))
+        if hasNext:
+          fileOut.write(', ')
+      fileOut.write('],\r\n')
+      fileOut.write('  "lyricLines": [')
+      hasNext = len(lyricLines)
+      for entry in lyricLines:
+        hasNext -= 1
+        fileOut.write(str(entry))
+        if hasNext:
+          fileOut.write(', ')
+      fileOut.write('],\r\n')
+      fileOut.write('  "nonLyricLines": [')
+      hasNext = len(nonLyricLines)
+      for entry in nonLyricLines:
+        hasNext -= 1
+        fileOut.write(str(entry))
+        if hasNext:
+          fileOut.write(', ')
+      fileOut.write('],\r\n')
+      fileOut.write('  "sectionHeaders": [')
+      hasNext = len(sectionHeaders)
+      for entry in sectionHeaders:
+        hasNext -= 1
+        fileOut.write(str(entry))
+        if hasNext:
+          fileOut.write(', ')
+      fileOut.write('],\r\n')
+      fileOut.write('  "metadataLines": [')
+      hasNext = len(metadataLines)
+      for entry in metadataLines:
+        hasNext -= 1
+        fileOut.write(str(entry))
+        if hasNext:
+          fileOut.write(', ')
+      fileOut.write(']\r\n')
+      fileOut.write('}\r\n')
   
   
   

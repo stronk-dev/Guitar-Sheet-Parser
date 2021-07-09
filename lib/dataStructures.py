@@ -235,6 +235,8 @@ class Song:
     self.hightestWhitespaceOnWidthRatioAllowed = float(configObj['hightestWhitespaceOnWidthRatioAllowed'])
     # Strip empty lines from input or keep em
     self.keepEmptyLines = configObj['keepEmptyLines'] == '1'
+    # Strip empty lines from input or keep em
+    self.writeMetadata = configObj['writemetadata'] == '1'
 
 
   """!@brief Calculates dimensions of metadata
