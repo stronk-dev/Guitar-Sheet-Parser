@@ -50,7 +50,7 @@ def outputToTxt(folderLocation, printRaw, songObj):
   for line in songObj.metadata.split('\n'):
     # remove any unwanted characters from metadata
     line = line.rstrip()
-    if not line:
+    if not songObj.keepEmptyLines and not line:
       continue
     #print("meta line '{}'".format(line))
     output += line + '\r\n'
@@ -58,7 +58,8 @@ def outputToTxt(folderLocation, printRaw, songObj):
     lineCounter += 1
     
   # If exporting raw, do not include the whitespace between metadata and sections
-  if not printRaw:
+  # also do not add an extra whitespace if we already keep whitespaces from input
+  if not printRaw and not songObj.keepEmptyLines:
     output += '\r\n'
     emptyLines.append(lineCounter)
     lineCounter += 1
@@ -85,19 +86,19 @@ def outputToTxt(folderLocation, printRaw, songObj):
         output += lyricline + '\r\n'
         lyricLines.append(lineCounter)
         lineCounter += 1
-      #If both lines are empty, it is an empty line
-      # So if printRaw == false, insert one empty line
+      #If both lines are empty, it is 1 emptyline
       if not printRaw and not len(tabline) and not len(lyricline):
         output += '\r\n'
         emptyLines.append(lineCounter)
         lineCounter += 1
       lineIterator += 1
     # If exporting raw, do not include the whitespace between sections
-    if not printRaw:
+    # also do not add an extra whitespace if we already keep whitespaces from input
+    if not printRaw and not songObj.keepEmptyLines:
       output += '\r\n'
       emptyLines.append(lineCounter)
       lineCounter += 1
-  # Finished, so print some trailing endlines
+  # Finished
   outputLocation = ""
   if not printRaw:
     outputLocation = folderLocation + "/"  + songObj.title + ".txt"
