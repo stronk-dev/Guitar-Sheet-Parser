@@ -221,6 +221,8 @@ class Song:
     self.metadataFontsize = int(configObj['metaFontWeight'])
     self.metadataFontFamily = configObj['metafontfamily']
     self.fontMetadata = ImageFont.truetype(self.metadataFontFamily, self.metadataFontsize)
+    # percentageof missing whitespace and total page height
+    self.tryToShrinkRatio = float(configObj['tryToShrinkRatio'])
 
 
 
@@ -366,7 +368,8 @@ class Song:
       shortInPercentages = amountWeAreShort / self.imageHeight
       #print("Whitespace {} vs next section height {}".format(whitespace, nextFirstSection.expectedHeight))
       #print("We are {} short to fit the next image (total image height {} => {}% of total height)".format(amountWeAreShort, self.imageHeight, shortInPercentages*100))
-      if shortInPercentages < 0.15:
+      # Since we also resize based on minimum required whitespaces, we can be a bit more aggressive with this
+      if shortInPercentages < self.tryToShrinkRatio:
         return True
       currentPageIt += 1
     return False
