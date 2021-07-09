@@ -49,6 +49,10 @@ def main():
       print("Resizing down to fit whitespace more efficiently")
       song.resizeAllSections(-1)
       song.sectionsToPages()
+    # Optimalisation: increase font size as long as the amount of pages does not increase
+    song.increaseWhileSameAmountOfPages()
+    # Fit all sections on each page, resizes down if it does not fit on width
+    song.fitSectionsByWidth()
     # Parse as PNG a4
     # Create subdirectory where we will output our images
     targetDirectory = song.outputLocation + "-a4-png"

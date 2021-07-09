@@ -243,7 +243,7 @@ class Song:
     @return None
   """
   def resizeAllSections(self, mutator):
-    print("Resizing font by {} to {}".format(mutator, self.fontSize))
+    #print("Resizing font by {} to {}".format(mutator, self.fontSize))
     self.fontSize += mutator
     self.fontLyrics = ImageFont.truetype(self.configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(self.configObj['tablaturefontfamliy'], self.fontSize)
@@ -275,6 +275,30 @@ class Song:
         print("There is an overflow on width: this section has a width of {}, but we have {} ({}-{}-{}) amount of space".format(section.expectedWidth, self.imageWidth - self.leftMargin - self.rightMargin, self.imageWidth, self.leftMargin, self.rightMargin))
         return False
     return True
+
+  """!@brief Checks whether we can increase the font size without creating more pages
+    @return None
+  """
+  def increaseWhileSameAmountOfPages(self):
+    targetPageAmount = len(self.pages)
+    originalFontsize = self.fontSize
+    self.resizeAllSections(1)
+    self.sectionsToPages()
+    currentPageAmount = len(self.pages)
+    # Increase fontSize as long as we do not add a page
+    while currentPageAmount <= targetPageAmount:
+      self.resizeAllSections(+1)
+      self.sectionsToPages()
+      currentPageAmount = len(self.pages)
+    # Now undo latest increase to go back to target page amount
+    self.resizeAllSections(-1)
+    self.sectionsToPages()
+    currentPageAmount = len(self.pages)
+    if targetPageAmount != currentPageAmount:
+      print("Oops! While resizing up we changed the amount of pages from {} to {}".format(targetPageAmount, currentPageAmount))
+    if self.fontSize != originalFontsize:
+      print("Managed to change the font size from {} to {}".format(originalFontsize, self.fontSize))
+      
   
   """!@brief Tries to fill in the whitespace on the current render
     It will compare the size of existing whitespace with the size of the first section on the next page
@@ -304,11 +328,11 @@ class Song:
     # Sections vary in width, some are very small to begin with
     # Since (almost empty) lines will result in large whitespace sizes, we are less strict on checking that
     if biggestWhitespace / self.imageWidth > 0.9:
-      print("Stopping resizing down, since the smallest section has {}% whitespace on the width of the image".format((smallestWhitespace / self.imageWidth )* 100))
+      print("Stopping resizing down, since the smallest section has {}% whitespace on the width of the image".format((biggestWhitespace / self.imageWidth )* 100))
       return False
     # But the largest section on the page should be able to fit at least half of the available page
-    if smallestWhitespace / self.imageWidth > 0.5:
-      print("Stopping resizing down, since we largest section has {}% whitespace on the width of the image".format((biggestWhitespace / self.imageWidth )* 100))
+    if smallestWhitespace / self.imageWidth > 0.4:
+      print("Stopping resizing down, since we largest section has {}% whitespace on the width of the image".format((smallestWhitespace / self.imageWidth )* 100))
       return False
     # get first section on next page, if we have a next page to begin with
     while currentPageIt < amountOfPages - 1:
