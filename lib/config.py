@@ -49,7 +49,9 @@ def initConfig():
         'topMargin': 50,
         'leftMargin': 50,
         'rightMargin': 50,
-        'tryToShrinkRatio' : 0.25
+        'tryToShrinkRatio' : 0.25,
+        'lowestwhitespaceonwidthratioallowed': 0.90,
+        'hightestwhitespaceonwidthratioallowed': 0.40    
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:
