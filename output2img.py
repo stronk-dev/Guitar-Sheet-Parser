@@ -31,8 +31,8 @@ def outputToImage(folderLocation, songObj):
   if not os.path.exists(folderLocation):
     os.mkdir(folderLocation)
     print("Directory " , folderLocation ,  " Created ")
-  #else:    
-    #print("Directory " , folderLocation ,  " already exists")
+  else:    
+    print("Directory " , folderLocation ,  " already exists")
       
   # Init image info
   imageNumber = 1
@@ -48,7 +48,7 @@ def outputToImage(folderLocation, songObj):
     line = line.rstrip()
     if not line:
       continue
-    #print("meta line '{}'".format(line))
+    print("meta line '{}'".format(line))
     metadataTextWidth, metadataTextHeight = songObj.fontMetadata.getsize(line)
     draw.text((songObj.leftMargin,currentHeight), line, fill=songObj.metadataColour, font=songObj.fontMetadata)
     currentHeight += metadataTextHeight
@@ -72,7 +72,7 @@ def outputToImage(folderLocation, songObj):
       currentHeight += headerHeight
       # Write each line tablature&lyric data
       while lineIterator < amountOfLines:
-        #print("Printing tablatures line {} and lyrics line {}".format(section.tablatures[lineIterator], section.lyrics[lineIterator]))
+        print("Printing tablatures line {} and lyrics line {}".format(section.tablatures[lineIterator], section.lyrics[lineIterator]))
         # Get tablatures&lyric line
         lyricTextWidth, lyricTextHeight = songObj.fontLyrics.getsize(section.lyrics[lineIterator])
         tablatureTextWidth, tablatureTextHeight = songObj.fontTablature.getsize(section.tablatures[lineIterator])
@@ -82,7 +82,7 @@ def outputToImage(folderLocation, songObj):
         draw.text((songObj.leftMargin,currentHeight), section.lyrics[lineIterator], fill=songObj.fontColour, font=songObj.fontLyrics)
         currentHeight += lyricTextHeight
         lineIterator += 1
-        #print("currentheight={}".format(currentHeight))
+        print("currentheight={}".format(currentHeight))
       # Margin between each section
       currentHeight += songObj.topMargin
     # Got all sections in the page, so write it

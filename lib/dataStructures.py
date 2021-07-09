@@ -47,30 +47,30 @@ def readSourceFile(inputFile):
 def isTablatureData(inputString):
   if not inputString:
     return
-  #print("Checking '{}' for line type".format(inputString))
+  print("Checking '{}' for line type".format(inputString))
   # Assume tablature line if any character {/, #, (, ), }
   tablatureSpecificCharacterString = r"/#"
   if any(elem in inputString for elem in tablatureSpecificCharacterString):
-    #print("'{}' is a tablature line, since it contains a tablature specific character".format(inputString))
+    print("'{}' is a tablature line, since it contains a tablature specific character".format(inputString))
     return True
   # Assume LYRIC line if any TEXT character OTHER THAN {a, b, c, d, e, f, g, h, b, x, m, j, n}
   lyricSpecificCharacterString = r"abcdefghbxmjn"
   for char in inputString:
     if char.isalpha():
       if not char.lower() in lyricSpecificCharacterString:
-        #print("'{}' is a LYRIC line, since it contains lyric specific text characters".format(inputString))
+        print("'{}' is a LYRIC line, since it contains lyric specific text characters".format(inputString))
         return False
   # Assume tablature line if any digit
   if any(char.isdigit() for char in inputString):
-    #print("'{}' is a tablature line, since it contains a number".format(inputString))
+    print("'{}' is a tablature line, since it contains a number".format(inputString))
     return True
   # Assume LYRIC line if any character {.}
   lyricSpecialChars = r"."
   if any(elem in inputString for elem in lyricSpecialChars):
-    #print("'{}' is a LYRIC line, since it contains lyric specific special characters".format(inputString))
+    print("'{}' is a LYRIC line, since it contains lyric specific special characters".format(inputString))
     return False
   # Else warn and assume tablature line
-  #print("Unable to identify if '{}' is a lyric or tablature line. Assuming it is a tablature line. Please improve the isTablatureData function".format(inputString))
+  print("Unable to identify if '{}' is a lyric or tablature line. Assuming it is a tablature line. Please improve the isTablatureData function".format(inputString))
   return True
 
 """!@brief Class containing Section specific data
@@ -103,7 +103,7 @@ class Section:
     headerWidth, headerHeight = fontTablature.getsize(self.header)
     heightSum += headerHeight
     maxWidth = headerWidth
-    #print("With header, dimensions of section '{}' start at {}H{}B".format(self.header[:-2], heightSum, maxWidth))
+    print("With header, dimensions of section '{}' start at {}H{}B".format(self.header[:-2], heightSum, maxWidth))
     while lineIterator < amountOfLines:
       # Get chord&lyric line dimensions
       lyricTextWidth, lyricTextHeight = fontLyrics.getsize(self.lyrics[lineIterator])
@@ -131,7 +131,7 @@ class Section:
         continue
       # Determine lyric or tablature line
       currentIsTablature = isTablatureData(line)
-      #print("Have line {} isTab={}, isLyric={}".format(line, currentIsTablature, not currentIsTablature))
+      print("Have line {} isTab={}, isLyric={}".format(line, currentIsTablature, not currentIsTablature))
       # Initially just fill in the first line correctly
       if isFirstLine:
         isFirstLine = False
@@ -143,16 +143,16 @@ class Section:
       # we need to insert an empty line of the other type
       elif currentIsTablature == prevWasTablature:
         if currentIsTablature:
-          #print("Inserting empty Lyric line")
+          print("Inserting empty Lyric line")
           self.tablatures.append(line)
           self.lyrics.append("")
         else:
-          #print("Inserting empty tablature line")
+          print("Inserting empty tablature line")
           self.lyrics.append(line)
           self.tablatures.append("")
       # also insert the current line
       elif currentIsTablature:
-        #print("Inserting empty Lyric line")
+        print("Inserting empty Lyric line")
         self.tablatures.append(line)
       else:
         self.lyrics.append(line)
@@ -244,7 +244,7 @@ class Song:
       currentHeight += metadataTextHeight
     self.metadataWidth = maxWidth
     self.metadataHeight = currentHeight
-    #print("metadata dimensions are {}h : {}w".format(currentHeight, maxWidth))
+    print("metadata dimensions are {}h : {}w".format(currentHeight, maxWidth))
 
   """!@brief Resizes all sections by a specified amount
     Also recalculates all section sizes afterwards
@@ -252,7 +252,7 @@ class Song:
     @return None
   """
   def resizeAllSections(self, mutator):
-    #print("Resizing font by {} to {}".format(mutator, self.fontSize))
+    print("Resizing font by {} to {}".format(mutator, self.fontSize))
     self.fontSize += mutator
     self.fontLyrics = ImageFont.truetype(self.fontFamilyLyrics, self.fontSize)
     self.fontTablature = ImageFont.truetype(self.fontFamilyTablature, self.fontSize)
@@ -281,10 +281,10 @@ class Song:
   def fitSectionsByWidth(self):
     self.prerenderSections()
     while not self.checkOverflowX():
-      #print("Resizing down to prevent overflow on the width of the page")
+      print("Resizing down to prevent overflow on the width of the page")
       self.resizeAllSections(-1)
     while not self.checkOverflowMetadata():
-      #print("Resizing down to prevent overflow on the width of the page")
+      print("Resizing down to prevent overflow on the width of the page")
       self.resizeMetadata(-1)
 
   """!@brief Checks whether we are overflowing on the width of the page
@@ -366,8 +366,8 @@ class Song:
       whitespace = self.imageHeight - curPage.totalHeight
       amountWeAreShort = nextFirstSection.expectedHeight - whitespace
       shortInPercentages = amountWeAreShort / self.imageHeight
-      #print("Whitespace {} vs next section height {}".format(whitespace, nextFirstSection.expectedHeight))
-      #print("We are {} short to fit the next image (total image height {} => {}% of total height)".format(amountWeAreShort, self.imageHeight, shortInPercentages*100))
+      print("Whitespace {} vs next section height {}".format(whitespace, nextFirstSection.expectedHeight))
+      print("We are {} short to fit the next image (total image height {} => {}% of total height)".format(amountWeAreShort, self.imageHeight, shortInPercentages*100))
       # Since we also resize based on minimum required whitespaces, we can be a bit more aggressive with this
       if shortInPercentages < self.tryToShrinkRatio:
         return True
@@ -428,7 +428,7 @@ class Song:
     lines = parseData.splitlines(True)
     if not len(lines):
       return
-    #print("We found {} lines of data".format(len(lines)))
+    print("We found {} lines of data".format(len(lines)))
     # Init first section by popping the delimiter
     thisSection = Section()
     thisSection.header = lines.pop(0)
@@ -448,15 +448,15 @@ class Song:
         # Reset, new section
         thisSection = Section()
         thisSection.header = line
-        #print("Header is '{}'".format(thisSection.header))
+        print("Header is '{}'".format(thisSection.header))
         isTabLine = True
       # Else is has lines in order tabline->lyricline->repeat
       elif isTabLine:
-        #print("Adding Tabline is '{}'".format(line))
+        print("Adding Tabline is '{}'".format(line))
         thisSection.tablatures.append(line)
         isTabLine = False
       else:
-        #print("Adding Lyricline is '{}'".format(line))
+        print("Adding Lyricline is '{}'".format(line))
         thisSection.lyrics.append(line)
         isTabLine = True
     # Add final section data
@@ -476,7 +476,7 @@ class Song:
     self.rawData = readSourceFile(self.inputFile)
     # Clean up input
     parseData = stripEmptyLines(self.rawData)
-    #print("Clean data='{}'\n".format(parseData))
+    print("Clean data='{}'\n".format(parseData))
     # While not EOF: build sections untill new section found.
     delimiterIndex = parseData.find("[")
     if delimiterIndex == -1:
@@ -508,7 +508,7 @@ class Song:
       else:
         # Set thisSection's data and remove it from the buffer
         thisSection.rawData = parseData[:delimiterIndex]
-        #print("set rawData of '{}' to this section".format(thisSection.rawData))
+        print("set rawData of '{}' to this section".format(thisSection.rawData))
         parseData = parseData[delimiterIndex:]
       # Finally parse section data
       thisSection.initSections()

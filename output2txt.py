@@ -45,7 +45,7 @@ def outputToTxt(folderLocation, printRaw, songObj):
     line = line.rstrip()
     if not line:
       continue
-    #print("meta line '{}'".format(line))
+    print("meta line '{}'".format(line))
     output += line + '\r\n'
   # If exporting raw, do not include the whitespace between metadata and sections
   if not printRaw:
