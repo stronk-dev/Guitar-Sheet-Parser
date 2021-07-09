@@ -35,9 +35,9 @@ def main():
   songs = lib.initSongs.getSongObjects()
   # Get what programs we are going to run
   configObj = lib.config.config['options']
-  exportToImg = configObj['exporttoimg']
-  exportToTxt = configObj['exporttotxt']
-  exportToRaw = configObj['exporttoraw']
+  exportToImg = configObj['exporttoimg'] == '1'
+  exportToTxt = configObj['exporttotxt'] == '1'
+  exportToRaw = configObj['exporttoraw'] == '1'
 
   # Convert all songs into sections
   for song in songs:
