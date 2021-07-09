@@ -212,13 +212,15 @@ class Song:
     # Since font size is then shrunk and grown to fit whitespace we do not need to be as accurate
     # PPI of 144 -> fontSize of 32
     self.fontSize = int(self.ppi / 4.5)
-    self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
     self.leftMargin = int(configObj['leftMargin'])
     self.rightMargin = int(configObj['rightMargin'])
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
     self.fontFamilyLyrics = configObj['lyricfontfamily']
     self.fontFamilyTablature = configObj['tablaturefontfamliy']
+    self.metadataFontsize = int(configObj['metaFontWeight'])
+    self.metadataFontFamily = configObj['metafontfamily']
+    self.fontMetadata = ImageFont.truetype(self.metadataFontFamily, self.metadataFontsize)
 
 
 
@@ -254,6 +256,15 @@ class Song:
     self.fontTablature = ImageFont.truetype(self.fontFamilyTablature, self.fontSize)
     self.prerenderSections()
 
+  """!@brief Resizes metadata and recalcs its size
+    @param mutator amount of fontSize to add/dec from current font size
+    @return None
+  """
+  def resizeMetadata(self, mutator):
+    self.metadataFontsize += mutator
+    self.fontMetadata = ImageFont.truetype(self.metadataFontFamily, self.metadataFontsize)
+    self.calculateMetadataDimensions()
+
   """!@brief Calculates the expected dimensions of all sections
     @return None
   """
@@ -270,6 +281,9 @@ class Song:
     while not self.checkOverflowX():
       #print("Resizing down to prevent overflow on the width of the page")
       self.resizeAllSections(-1)
+    while not self.checkOverflowMetadata():
+      #print("Resizing down to prevent overflow on the width of the page")
+      self.resizeMetadata(-1)
 
   """!@brief Checks whether we are overflowing on the width of the page
     @return True if everything OK, False if overflowing
@@ -279,6 +293,14 @@ class Song:
       if section.expectedWidth > self.imageWidth - self.leftMargin - self.rightMargin:
         print("There is an overflow on width: this section has a width of {}, but we have {} ({}-{}-{}) amount of space".format(section.expectedWidth, self.imageWidth - self.leftMargin - self.rightMargin, self.imageWidth, self.leftMargin, self.rightMargin))
         return False
+    return True
+  
+  """!@brief Checks whether the metadata is overflowing on the width of the page
+    @return True if everything OK, False if overflowing
+  """
+  def checkOverflowMetadata(self):
+    if self.metadataWidth > self.imageWidth - self.leftMargin - self.rightMargin:
+      return False
     return True
 
   """!@brief Checks whether we can increase the font size without creating more pages
