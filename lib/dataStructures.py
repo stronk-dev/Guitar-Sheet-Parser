@@ -211,6 +211,7 @@ class Song:
     self.rightMargin = int(configObj['rightMargin'])
     self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
     self.fontSize = int(configObj['songFontWeight'])
+    self.originalFontSize = int(configObj['songFontWeight'])
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
     self.configObj = configObj
@@ -284,6 +285,30 @@ class Song:
     amountOfPages = len(self.pages)
     currentPageIt = 0
     if not amountOfPages:
+      return False
+    # Stop resizing if the font size is becoming too small
+    fontDifference = self.originalFontSize - self.fontSize
+    if fontDifference > self.originalFontSize / 2:
+      print("The original fontSize has already decreased from {} to {}, so we will stop resizing the image down".format(self.originalFontSize, self.fontSize))
+      return False
+    # Stop resizing if we are creating too much widespace on the width
+    smallestWhitespace = self.imageHeight
+    biggestWhitespace = -1
+    for page in self.pages:
+      for section in page.sections:
+          whitespaceOnWidth = self.imageWidth - self.leftMargin - self.rightMargin - section.expectedWidth
+          if whitespaceOnWidth < smallestWhitespace:
+            smallestWhitespace = whitespaceOnWidth
+          if whitespaceOnWidth > biggestWhitespace:
+            biggestWhitespace = whitespaceOnWidth
+    # Sections vary in width, some are very small to begin with
+    # Since (almost empty) lines will result in large whitespace sizes, we are less strict on checking that
+    if biggestWhitespace / self.imageWidth > 0.9:
+      print("Stopping resizing down, since the smallest section has {}% whitespace on the width of the image".format((smallestWhitespace / self.imageWidth )* 100))
+      return False
+    # But the largest section on the page should be able to fit at least half of the available page
+    if smallestWhitespace / self.imageWidth > 0.5:
+      print("Stopping resizing down, since we largest section has {}% whitespace on the width of the image".format((biggestWhitespace / self.imageWidth )* 100))
       return False
     # get first section on next page, if we have a next page to begin with
     while currentPageIt < amountOfPages - 1:
