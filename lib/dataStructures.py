@@ -53,8 +53,8 @@ def isTablatureData(inputString):
   if any(elem in inputString for elem in tablatureSpecificCharacterString):
     #print("'{}' is a tablature line, since it contains a tablature specific character".format(inputString))
     return True
-  # Assume LYRIC line if any TEXT character OTHER THAN {a, b, c, d, e, f, g, h, b, x, m}
-  lyricSpecificCharacterString = r"abcdefghbxm"
+  # Assume LYRIC line if any TEXT character OTHER THAN {a, b, c, d, e, f, g, h, b, x, m, j, n}
+  lyricSpecificCharacterString = r"abcdefghbxmjn"
   for char in inputString:
     if char.isalpha():
       if not char.lower() in lyricSpecificCharacterString:
