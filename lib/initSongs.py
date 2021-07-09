@@ -48,7 +48,7 @@ def walkDirectory(root, depth):
       for f in os.listdir(start_dir):
           ff = os.path.join(start_dir,f)
           if os.path.isdir(ff):
-              if depth>= 0:
+              if depth > 0:
                   do_scan(ff,output,depth-1)
           else:
               output.append(ff)
