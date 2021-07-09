@@ -100,6 +100,7 @@ class Section:
     headerWidth, headerHeight = fontTablature.getsize(self.header)
     heightSum += headerHeight
     maxWidth = headerWidth
+    #print("With header, dimensions of section '{}' start at {}H{}B".format(self.header[:-2], heightSum, maxWidth))
     while lineIterator < amountOfLines:
       # Get chord&lyric line dimensions
       lyricTextWidth, lyricTextHeight = fontLyrics.getsize(self.lyrics[lineIterator])
@@ -123,8 +124,11 @@ class Section:
     # So we have to insert empty lines if we have subsequent tablature or lyric lines
     lines = self.rawData.split('\r\n')
     for line in lines:
+      if not len(line):
+        continue
       # Determine lyric or tablature line
       currentIsTablature = isTablatureData(line)
+      #print("Have line {} isTab={}, isLyric={}".format(line, currentIsTablature, not currentIsTablature))
       # Initially just fill in the first line correctly
       if isFirstLine:
         isFirstLine = False
@@ -153,7 +157,7 @@ class Section:
       prevWasTablature = currentIsTablature
     # Simple check to see if it probably exported correctly
     if abs(len(self.lyrics) - len(self.tablatures)) > 1:
-      print("Unable to parse section, since there is a mismatch between the amount of tablature and lyric lines.")
+      print("Unable to parse section {}, since there is a mismatch between the amount of lyrics ({}) and tablature ({}) lines.".format(self.header, len(self.lyrics), len(self.tablatures)))
       return
     # Add a trailing empty line if necessary
     elif len(self.lyrics) > len(self.tablatures):
@@ -225,6 +229,7 @@ class Song:
       currentHeight += metadataTextHeight
     self.metadataWidth = maxWidth
     self.metadataHeight = currentHeight
+    #print("metadata dimensions are {}h : {}w".format(currentHeight, maxWidth))
 
   """!@brief Resizes all sections by a specified amount
     Also recalculates all section sizes afterwards
@@ -232,6 +237,7 @@ class Song:
     @return None
   """
   def resizeAllSections(self, mutator):
+    print("Resizing font by {} to {}".format(mutator, self.fontSize))
     self.fontSize += mutator
     self.fontLyrics = ImageFont.truetype(self.configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(self.configObj['tablaturefontfamliy'], self.fontSize)
@@ -251,8 +257,8 @@ class Song:
   def fitSectionsByWidth(self):
     self.prerenderSections()
     while not self.checkOverflowX():
-      #print("Overflowing on width of the page. Decreasing font size by 2...")
-      self.resizeAllSections(-2)
+      #print("Resizing down to prevent overflow on the width of the page")
+      self.resizeAllSections(-1)
 
   """!@brief Checks whether we are overflowing on the width of the page
     @return True if everything OK, False if overflowing
@@ -260,14 +266,43 @@ class Song:
   def checkOverflowX(self):
     for section in self.sections:
       if section.expectedWidth > self.imageWidth - self.leftMargin - self.rightMargin:
+        print("There is an overflow on width: this section has a width of {}, but we have {} ({}-{}-{}) amount of space".format(section.expectedWidth, self.imageWidth - self.leftMargin - self.rightMargin, self.imageWidth, self.leftMargin, self.rightMargin))
         return False
     return True
+  
+  """!@brief Tries to fill in the whitespace on the current render
+    It will compare the size of existing whitespace with the size of the first section on the next page
+    While the amount we are short is within 10% of the current image height, resize down
+    @return True if we should resize down, False if we are fine
+  """
+  def canFillWhitespace(self):
+    amountOfPages = len(self.pages)
+    currentPageIt = 0
+    if not amountOfPages:
+      return False
+    # get first section on next page, if we have a next page to begin with
+    while currentPageIt < amountOfPages - 1:
+      curPage = self.pages[currentPageIt]
+      nextPage = self.pages[currentPageIt + 1]
+      nextFirstSection = nextPage.sections[0]
+      whitespace = self.imageHeight - curPage.totalHeight
+      amountWeAreShort = nextFirstSection.expectedHeight - whitespace
+      shortInPercentages = amountWeAreShort / self.imageHeight
+      # Take a 10% range
+      #print("Whitespace {} vs next section height {}".format(whitespace, nextFirstSection.expectedHeight))
+      #print("We are {} short to fit the next image (total image height {} => {}% of total height)".format(amountWeAreShort, self.imageHeight, shortInPercentages*100))
+      if shortInPercentages < 0.10:
+        return True
+      currentPageIt += 1
+    return False
+      
 
   """!@brief Fits current sections into pages
     @return None
   """
   def sectionsToPages(self):
     self.prerenderSections()
+    self.pages = []
     # First page contains metadata
     currentHeight = self.topMargin
     currentHeight += self.metadataHeight

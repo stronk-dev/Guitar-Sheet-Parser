@@ -41,13 +41,16 @@ def main():
     song.fitSectionsByWidth()
     # Prerender: calculate Pages, and move sections into Pages
     song.sectionsToPages()
-    # Optimalisation: check for whitespace, check verhouding of whitespace&first section on next page
-    # TODO
+    # Optimalisation: try to fill whitespace
+    while song.canFillWhitespace():
+      print("Resizing down to fit whitespace more efficiently")
+      song.resizeAllSections(-1)
+      song.sectionsToPages()
     # Parse as PNG a4
     if song.isParsed:
       # Create subdirectory where we will output our images
       targetDirectory = song.outputLocation + "-a4-png"
-      print("Successfully parsed file. Writing output to '{}'".format(targetDirectory)) 
+      print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
       # Write out metadata and sections, as many as can fit on one page
       output2img.outputToImage(targetDirectory, song)
 
