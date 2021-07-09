@@ -39,16 +39,16 @@ def initConfig():
         'exporttoraw': 0
       }
     config['output'] = {'metafontfamily': 'fonts/CourierPrime-Regular.ttf',
-        'metaFontWeight': 16,
+        'metaFontWeight': 32,
         'lyricfontfamily': 'fonts/CourierPrime-Regular.ttf',
         'tablaturefontfamliy': 'fonts/CourierPrime-Bold.ttf',
         'imageppi': 144,
         'backgroundColour': '255,255,255',
         'fontColour': '0,0,0',
         'metadataColour': '128,128,128',
-        'topMargin': 10,
-        'leftMargin': 25,
-        'rightMargin': 25
+        'topMargin': 50,
+        'leftMargin': 50,
+        'rightMargin': 50
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:

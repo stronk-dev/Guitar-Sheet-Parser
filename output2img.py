@@ -52,10 +52,10 @@ def outputToImage(folderLocation, songObj):
     metadataTextWidth, metadataTextHeight = songObj.fontMetadata.getsize(line)
     draw.text((songObj.leftMargin,currentHeight), line, fill=songObj.metadataColour, font=songObj.fontMetadata)
     currentHeight += metadataTextHeight
-  # Margin between metadata and the first section
-  currentHeight += songObj.topMargin
   # Draw all pages
   for page in songObj.pages:
+    # Margin between metadata and the first section / section and top of page
+    currentHeight += songObj.topMargin
     for section in page.sections:
       # Reset section specific variables
       lineIterator = 0
