@@ -47,13 +47,12 @@ def outputToTxt(folderLocation, printRaw, songObj):
 
   lineCounter = 0
   # Write metadata
-  for line in songObj.metadata.split('\n'):
+  for line in songObj.metadata.splitlines(True):
     # remove any unwanted characters from metadata
-    line = line.rstrip()
     if not songObj.keepEmptyLines and not line:
       continue
     #print("meta line '{}'".format(line))
-    output += line + '\r\n'
+    output += line
     metadataLines.append(lineCounter)
     lineCounter += 1
     
