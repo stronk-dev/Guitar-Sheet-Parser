@@ -17,6 +17,7 @@
 import os
 import configparser
 
+
 """!@brief Load, creates and keeps the config up to date
 """
 def initConfig():
@@ -33,11 +34,11 @@ def initConfig():
         'maxDepth': 3
       }
     config['output'] = {'metafontfamily': 'fonts/CourierPrime-Regular.ttf',
-        'metaFontWeight': 8,
+        'metaFontWeight': 16,
         'lyricfontfamily': 'fonts/CourierPrime-Regular.ttf',
         'tablaturefontfamliy': 'fonts/CourierPrime-Bold.ttf',
-        'songFontWeight': 16,
-        'imageWidth': 595, 'imageHeight': 842,  # A4 at 72dpi
+        'songFontWeight': 32,
+        'imageppi': 144,
         'backgroundColour': '255,255,255',
         'fontColour': '0,0,0',
         'metadataColour': '128,128,128',

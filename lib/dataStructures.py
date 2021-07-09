@@ -17,6 +17,9 @@ import re
 import lib.config
 from PIL import ImageFont
 
+A4 = {'width': 210, 'height': 297}
+A5 = {'width': 210, 'height': 148}
+
 """!@brief Removes empty lines and makes sure every line ends with \r\n
     @param inputString raw txt input
     @return string of parsed input
@@ -200,8 +203,10 @@ class Song:
     self.fontColour = tuple(int(var) for var in configObj['fontColour'].split(','))
     self.backgroundColour = tuple(int(var) for var in configObj['backgroundColour'].split(','))
     self.metadataColour = tuple(int(var) for var in configObj['metadataColour'].split(','))
-    self.imageWidth = int(configObj['imageWidth'])
-    self.imageHeight = int(configObj['imageHeight'])
+    self.ppi = int(configObj['imageppi'])
+    # 0.03937 pixels per minimeter per ppi
+    self.imageWidth = int(self.ppi * A4['width'] * 0.03937)
+    self.imageHeight = int(self.ppi * A4['height'] * 0.03937)
     self.leftMargin = int(configObj['leftMargin'])
     self.rightMargin = int(configObj['rightMargin'])
     self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
@@ -272,7 +277,7 @@ class Song:
   
   """!@brief Tries to fill in the whitespace on the current render
     It will compare the size of existing whitespace with the size of the first section on the next page
-    While the amount we are short is within 10% of the current image height, resize down
+    While the amount we are short is within X% of the current image height, resize down
     @return True if we should resize down, False if we are fine
   """
   def canFillWhitespace(self):
@@ -288,10 +293,9 @@ class Song:
       whitespace = self.imageHeight - curPage.totalHeight
       amountWeAreShort = nextFirstSection.expectedHeight - whitespace
       shortInPercentages = amountWeAreShort / self.imageHeight
-      # Take a 10% range
       #print("Whitespace {} vs next section height {}".format(whitespace, nextFirstSection.expectedHeight))
       #print("We are {} short to fit the next image (total image height {} => {}% of total height)".format(amountWeAreShort, self.imageHeight, shortInPercentages*100))
-      if shortInPercentages < 0.10:
+      if shortInPercentages < 0.15:
         return True
       currentPageIt += 1
     return False
