@@ -214,7 +214,6 @@ class Song:
     self.fontMetadata = ImageFont.truetype(configObj['metafontfamily'], int(configObj['metaFontWeight']))
     self.leftMargin = int(configObj['leftMargin'])
     self.rightMargin = int(configObj['rightMargin'])
-    self.originalFontSize = int(configObj['songFontWeight'])
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
     self.configObj = configObj
@@ -313,8 +312,6 @@ class Song:
     currentPageIt = 0
     if not amountOfPages:
       return False
-    # Stop resizing if the font size is becoming too small
-    fontDifference = self.originalFontSize - self.fontSize
     # Stop resizing if we are creating too much widespace on the width
     smallestWhitespace = self.imageHeight
     biggestWhitespace = -1
