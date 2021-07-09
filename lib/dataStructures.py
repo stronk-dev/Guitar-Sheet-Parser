@@ -45,10 +45,6 @@ def isTablatureData(inputString):
   if not inputString:
     return
   #print("Checking '{}' for line type".format(inputString))
-  # Assume tablature line if any digit
-  if any(char.isdigit() for char in inputString):
-    #print("'{}' is a tablature line, since it contains a number".format(inputString))
-    return True
   # Assume tablature line if any character {/, #, (, ), }
   tablatureSpecificCharacterString = r"/#"
   if any(elem in inputString for elem in tablatureSpecificCharacterString):
@@ -61,6 +57,10 @@ def isTablatureData(inputString):
       if not char.lower() in lyricSpecificCharacterString:
         #print("'{}' is a LYRIC line, since it contains lyric specific text characters".format(inputString))
         return False
+  # Assume tablature line if any digit
+  if any(char.isdigit() for char in inputString):
+    #print("'{}' is a tablature line, since it contains a number".format(inputString))
+    return True
   # Assume LYRIC line if any character {.}
   lyricSpecialChars = r"."
   if any(elem in inputString for elem in lyricSpecialChars):
