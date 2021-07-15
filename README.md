@@ -17,7 +17,16 @@ Converting to .png will try to minimise the amount of pages required (to prevent
 
 When the program is started for the first time it will create a ``config.ini`` file which can edited to change the behaviour of the program. For example, you might want to force the program to limit the amount of pages, regardless of whitespace.
 
+
+Run with 'python3 main.py'
+
 By default it will try to parse all supported filetypes found in the current (sub)directory and convert them to A4 sized PNG files
 
 
 Detailed config info: TBD
+
+Example output:
+![hc-12-1](https://user-images.githubusercontent.com/9502378/125768042-f21af6e0-2c83-4fb5-a546-19e5c97011fd.png)
+![hc-12-2](https://user-images.githubusercontent.com/9502378/125768049-5b2373c0-8470-4049-b195-d1227ed68659.png)
+
+
