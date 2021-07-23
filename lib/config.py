@@ -47,13 +47,14 @@ def initConfig():
         'fontColour': '0,0,0',
         'metadataColour': '128,128,128',
         'topMargin': 50,
-        'leftMargin': 50,
+        'leftMargin': 100,
         'rightMargin': 50,
-        'tryToShrinkRatio' : 0.25,
+        'tryToShrinkRatio' : 0.4,
         'lowestwhitespaceonwidthratioallowed': 0.90,
         'highestwhitespaceonwidthratioallowed': 0.40,
         'keepEmptyLines': 1,
-        'writeheaderfile': 0
+        'writeheaderfile': 0,
+        'minPages': 2
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:

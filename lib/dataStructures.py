@@ -237,6 +237,8 @@ class Song:
     self.keepEmptyLines = configObj['keepEmptyLines'] == '1'
     # Strip empty lines from input or keep em
     self.writeMetadata = configObj['writeheaderfile'] == '1'
+    # Don't go under this number
+    self.minPages = int(configObj['minPages'])
 
 
   """!@brief Calculates dimensions of metadata
@@ -322,16 +324,18 @@ class Song:
     @return None
   """
   def increaseWhileSameAmountOfPages(self):
-    targetPageAmount = len(self.pages)
+    targetPageAmount = max(len(self.pages), self.minPages)
     originalFontsize = self.fontSize
-    self.resizeAllSections(1)
+    print("Starting font size increase with {} pages and {} font size".format(targetPageAmount, originalFontsize))
+    self.resizeAllSections(+1)
     self.sectionsToPages()
     currentPageAmount = len(self.pages)
     # Increase fontSize as long as we do not add a page
-    while currentPageAmount <= targetPageAmount and self.checkOverflowX():
+    while ((currentPageAmount <= targetPageAmount) and self.checkOverflowX()):
       self.resizeAllSections(+1)
       self.sectionsToPages()
       currentPageAmount = len(self.pages)
+      print("Current page amount is {} with font size {}".format(currentPageAmount, self.fontSize))
     # Now undo latest increase to go back to target page amount
     self.resizeAllSections(-1)
     self.sectionsToPages()
@@ -392,12 +396,16 @@ class Song:
     @return None
   """
   def sectionsToPages(self):
+    # If we are keeping whitespace, don't count the whitespace in between sections
+    sectionWhitespace = self.topMargin
+    if self.keepEmptyLines:
+      sectionWhitespace = 0
     self.prerenderSections()
     self.pages = []
     # First page contains metadata
     currentHeight = self.topMargin
     currentHeight += self.metadataHeight
-    currentHeight += self.topMargin
+    currentHeight += sectionWhitespace
     curPage = Page()
     # Now fit all sections
     for section in self.sections:
@@ -407,7 +415,7 @@ class Song:
       if currentHeight + section.expectedHeight > self.imageHeight:
         curPage.totalHeight = currentHeight
         self.pages.append(curPage)
-        currentHeight = self.topMargin
+        currentHeight = sectionWhitespace
         curPage = Page()
       # Add setion header size and size of lines of data
       headerWidth, headerHeight = self.fontTablature.getsize(section.header)
@@ -415,7 +423,7 @@ class Song:
       currentHeight += section.expectedHeight
       curPage.sections.append(section)
       # Margin between each section
-      currentHeight += self.topMargin
+      currentHeight += sectionWhitespace
     # No more sections left, so the current buffered image is ready to be written to file
     curPage.totalHeight = currentHeight
     self.pages.append(curPage)
