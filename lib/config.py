@@ -50,12 +50,13 @@ def initConfig():
         'horizontalMargin': 100,
         'extraHorizontalMargin': 100,
         'tryToShrinkRatio' : 0.4,
-        'lowestwhitespaceonwidthratioallowed': 0.90,
-        'highestwhitespaceonwidthratioallowed': 0.40,
+        'shortestlinewhitespaceratioallowed': 0.95,
+        'longestlinewhitespaceratioallowed': 0.30,
         'keepEmptyLines': 1,
         'writeheaderfile': 0,
         'minPages': 2,
-        'maxPages': 4
+        'maxPages': 4,
+        'preferEvenPageNumbers': 1
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:

@@ -229,16 +229,17 @@ class Song:
     self.tryToShrinkRatio = float(configObj['tryToShrinkRatio'])
     # Setting this makes sure that the largest section on the page fills at least this percentage of total width
     # The higher this is, the more it is allowed to shrink
-    self.lowestWhitespaceOnWidthRatioAllowed = float(configObj['lowestWhitespaceOnWidthRatioAllowed'])
-    # Some sections are very small, so the highest whitespace can be very large. 
-    # It is advised to keep this value relatively small
-    self.hightestWhitespaceOnWidthRatioAllowed = float(configObj['highestwhitespaceonwidthratioallowed'])
+    self.longestLineWhitespaceRatioAllowed = float(configObj['longestLineWhitespaceRatioAllowed'])
+    # Some lines are very small, so the highest whitespace can be very large. 
+    # It is advised to keep this ratio high for that reason
+    self.shortestLineWhitespaceRatioAllowed = float(configObj['shortestLineWhitespaceRatioAllowed'])
     # Strip empty lines from input or keep em
     self.keepEmptyLines = configObj['keepEmptyLines'] == '1'
     # Strip empty lines from input or keep em
     self.writeMetadata = configObj['writeheaderfile'] == '1'
     # Don't go under this number
     self.minPages = int(configObj['minPages'])
+    self.preferEvenPageNumbers = int(configObj['preferEvenPageNumbers'])
     self.maxPages = max(int(configObj['minPages']), int(configObj['maxPages']))
 
 
@@ -326,6 +327,9 @@ class Song:
   """
   def increaseToMinPages(self):
     targetPageAmount = max(len(self.pages), self.minPages)
+    if (targetPageAmount % 2) != 0 and self.preferEvenPageNumbers:
+      targetPageAmount += 1
+      print("Increasing target page amount to {} to make it an even number".format(targetPageAmount))
     originalFontsize = self.fontSize
     print("Starting font size increase with {} pages and {} font size".format(targetPageAmount, originalFontsize))
     self.resizeAllSections(+1)
@@ -355,6 +359,8 @@ class Song:
   def canFillWhitespace(self):
     amountOfPages = len(self.pages)
     currentPageIt = 0
+    totalHorizontalMargin = self.extraHorizontalMargin + self.horizontalMargin + self.horizontalMargin
+    imageWidthWithoutMargins = self.imageWidth - totalHorizontalMargin
     if not amountOfPages:
       return False
     # Stop resizing if we are creating too much widespace on the width
@@ -363,19 +369,20 @@ class Song:
     for page in self.pages:
       for section in page.sections:
           # We have 2* horizontal whitespace
-          whitespaceOnWidth = self.imageWidth - self.extraHorizontalMargin - self.horizontalMargin - self.horizontalMargin - section.expectedWidth
+          whitespaceOnWidth = self.imageWidth - totalHorizontalMargin - section.expectedWidth
           if whitespaceOnWidth < smallestWhitespace:
             smallestWhitespace = whitespaceOnWidth
           if whitespaceOnWidth > biggestWhitespace:
             biggestWhitespace = whitespaceOnWidth
     # Sections vary in width, some are very small to begin with
-    # Since (almost empty) lines will result in large whitespace sizes, we are less strict on checking that
-    if biggestWhitespace / self.imageWidth > self.lowestWhitespaceOnWidthRatioAllowed:
-      print("Stopping resizing down, since the smallest section has {}% whitespace on the width of the image".format((biggestWhitespace / self.imageWidth )* 100))
+    print("The shortest line has {} whitespace, the largest line {}. The image is {} wide with {} total horizontal margins (={}), resulting in a {} min ratio and {} max ratio, with a min limit of {} and a max limit of {}".format(biggestWhitespace, smallestWhitespace, self.imageWidth, totalHorizontalMargin, imageWidthWithoutMargins, biggestWhitespace / imageWidthWithoutMargins, smallestWhitespace / imageWidthWithoutMargins, self.shortestLineWhitespaceRatioAllowed, self.longestLineWhitespaceRatioAllowed))
+    # Make sure small lines fill the page enough
+    if biggestWhitespace / imageWidthWithoutMargins > self.shortestLineWhitespaceRatioAllowed:
+      print("Stopping resizing down, since the smallest section has {}% whitespace on the width of the image".format((biggestWhitespace / imageWidthWithoutMargins )* 100))
       return False
-    # But the largest section on the page should be able to fit at least half of the available page
-    if smallestWhitespace / self.imageWidth > self.hightestWhitespaceOnWidthRatioAllowed:
-      print("Stopping resizing down, since we largest section has {}% whitespace on the width of the image".format((smallestWhitespace / self.imageWidth )* 100))
+    # Make sure the longest lines fill the page enough
+    if smallestWhitespace / imageWidthWithoutMargins > self.longestLineWhitespaceRatioAllowed:
+      print("Stopping resizing down, since we largest section has {}% whitespace on the width of the image".format((smallestWhitespace / imageWidthWithoutMargins )* 100))
       return False
     # get first section on next page, if we have a next page to begin with
     while currentPageIt < amountOfPages - 1:
