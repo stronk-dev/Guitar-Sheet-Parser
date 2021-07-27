@@ -14,11 +14,7 @@
 #   as best as it can, shrinking or growing sections to fit the remaining space
 #
 # @section notes Notes
-# - Splitting raw text into lyric and tablature info is very basic at the moment.
-#   We need a better way to classify & split the various channels (raw tab, lyrics, chords, more?) that can be expected in tablature
-#
-# @section todo TODO
-# - Various prints should be printed at specific log levels, to easily switch between debug, info or warnings only
+# - 
 
 import lib.chordFinder
 import lib.dataStructures
@@ -27,6 +23,7 @@ import lib.transpose
 import lib.config
 import output2img
 import output2txt
+import logging
 
 def main():
   # Init config file
@@ -39,34 +36,53 @@ def main():
   exportToTxt = configObj['exporttotxt'] == '1'
   exportToRaw = configObj['exporttoraw'] == '1'
 
+  logLevel = int(configObj['loglevel'])
+  if logLevel == 1:
+    logLevel = logging.CRITICAL
+  elif logLevel == 2:
+    logLevel = logging.ERROR
+  elif logLevel == 3:
+    logLevel = logging.WARNING
+  elif logLevel == 4:
+    logLevel = logging.INFO
+  else:
+    logLevel = logging.DEBUG
+
+  logging.basicConfig()
+  logging.root.setLevel(logLevel)
+  logging.debug('Starting')
+
+  for song in songs:
+    logging.info("Found song '{}' at '{}'".format(song.title, song.inputFile))
+
   # Convert all songs into sections
   for song in songs:
-    print("Start parsing of file '{}'...".format(song.inputFile)) 
+    logging.info("Start parsing song '{}'...".format(song.title)) 
     # Initialise internal data structures
-    print("song file extension {}".format(song.fileExtension))
+    logging.debug("song file extension {}".format(song.fileExtension))
     if song.fileExtension == 'txt':
       song.initSections()
     elif song.fileExtension == 'rawtxt':
       song.initPreprocessed()
     else:
-      print("File extension '{}' not supported. Skipping...".format(song.fileExtension))
+      logging.warning("File extension '{}' not supported. Skipping...".format(song.fileExtension))
       continue
     # If input is .raw output. If output to raw is set, overwrite itself
     # ready quickly using rules
     if not song.isParsed:
-      print("Song was not initialized correctly. Skipping...")
+      logging.error("Song was not initialized correctly. Skipping...")
       continue
 
     if exportToTxt:
       # Create subdirectory where we will output our images
       targetDirectory = song.outputLocation + "-txt"
-      print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
+      logging.info("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
       # Write out metadata and sections, as many as can fit on one page
       output2txt.outputToTxt(targetDirectory, False, song)
     if exportToRaw:
       # Create subdirectory where we will output our images
       targetDirectory = song.outputLocation + "-txt"
-      print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
+      logging.info("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
       # Write out metadata and sections, as many as can fit on one page
       output2txt.outputToTxt(targetDirectory, True, song)
     if exportToImg:
@@ -76,11 +92,11 @@ def main():
       song.sectionsToPages()
       # Optimalisation: try to fill whitespace
       while len(song.pages) > song.maxPages:
-        print("Resizing down since we have {} pages and want {} pages".format(len(song.pages), song.maxPages))
+        logging.debug("Resizing down since we have {} pages and want {} pages".format(len(song.pages), song.maxPages))
         song.resizeAllSections(-1)
         song.sectionsToPages()
       while song.canFillWhitespace():
-        print("Resizing down to fill remaining vertical whitespace")
+        logging.debug("Resizing down to fill remaining vertical whitespace")
         song.resizeAllSections(-1)
         song.sectionsToPages()
       # Optimalisation: increase font size to fit target page amount
@@ -88,9 +104,10 @@ def main():
       # Parse as PNG a4
       # Create subdirectory where we will output our images
       targetDirectory = song.outputLocation + "-a4-png"
-      print("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
+      logging.info("Successfully parsed file. Writing output to '{}'\n".format(targetDirectory)) 
       # Write out metadata and sections, as many as can fit on one page
       output2img.outputToImage(targetDirectory, song)
 
 if __name__ == "__main__":
   main()
+  logging.debug('Finished')

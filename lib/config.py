@@ -36,7 +36,8 @@ def initConfig():
       }
     config['options'] = {'exporttoimg': 1,
         'exporttotxt': 0,
-        'exporttoraw': 0
+        'exporttoraw': 0,
+        'logLevel': 3
       }
     config['output'] = {'metafontfamily': 'fonts/CourierPrime-Regular.ttf',
         'metaFontWeight': 32,
@@ -56,7 +57,7 @@ def initConfig():
         'writeheaderfile': 0,
         'minPages': 2,
         'maxPages': 4,
-        'preferEvenPageNumbers': 1
+        'preferEvenPageNumbers': 0
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:

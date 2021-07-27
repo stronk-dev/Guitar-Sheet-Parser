@@ -11,11 +11,10 @@
 # @section notes Notes
 # - 
 #
-# @section todo TODO
-# - Various prints should be printed at specific log levels, to easily switch between debug, info or warnings only
 
 import os
 from PIL import Image, ImageDraw
+import logging
 
 """!@brief Exports the song object to images
     This function renders the metadata and sections
@@ -30,9 +29,9 @@ def outputToImage(folderLocation, songObj):
   # Create target Directory if doesn't exist
   if not os.path.exists(folderLocation):
     os.mkdir(folderLocation)
-    print("Directory " , folderLocation ,  " Created ")
-  #else:    
-    #print("Directory " , folderLocation ,  " already exists")
+    logging.info("Directory {} Created ".format(folderLocation))
+  else:    
+    logging.debug("Directory {} already exists".format(folderLocation))
       
   # Init image info
   imageNumber = 1
@@ -54,7 +53,7 @@ def outputToImage(folderLocation, songObj):
     line = line.rstrip()
     if not line and not songObj.keepEmptyLines:
       continue
-    #print("meta line '{}'".format(line))
+    logging.debug("Metadata '{}'".format(line))
     metadataTextWidth, metadataTextHeight = songObj.fontMetadata.getsize(line)
     draw.text((horizontalMargin, currentHeight), line, fill=songObj.metadataColour, font=songObj.fontMetadata)
     currentHeight += metadataTextHeight
@@ -67,10 +66,10 @@ def outputToImage(folderLocation, songObj):
       lineIterator = 0
       amountOfLines = len(section.lyrics)
       if (amountOfLines != len(section.tablatures)):
-        print("Cannot write this section to file, since it was not processed correctly. There are {} tablature lines and {} lyric lines. Aborting...".format(len(section.chords), amountOfLines))
+        logging.critical("Cannot write this section to file, since it was not processed correctly. There are {} tablature lines and {} lyric lines. Aborting...".format(len(section.chords), amountOfLines))
         return
       if (section.expectedHeight == -1 or section.expectedWidth == -1):
-        print("Cannot write this section to file, since it was not processed correctly. The expected dimensions are not set. Aborting...")
+        logging.critical("Cannot write this section to file, since it was not processed correctly. The expected dimensions are not set. Aborting...")
         return
       # write section title
       headerWidth, headerHeight = songObj.fontTablature.getsize(section.header)
@@ -78,7 +77,7 @@ def outputToImage(folderLocation, songObj):
       currentHeight += headerHeight
       # Write each line tablature&lyric data
       while lineIterator < amountOfLines:
-        #print("Printing tablatures line {} and lyrics line {}".format(section.tablatures[lineIterator], section.lyrics[lineIterator]))
+        logging.debug("Printing tablatures line {} and lyrics line {}".format(section.tablatures[lineIterator], section.lyrics[lineIterator]))
         # Get tablatures&lyric line
         lyricTextWidth, lyricTextHeight = songObj.fontLyrics.getsize(section.lyrics[lineIterator])
         tablatureTextWidth, tablatureTextHeight = songObj.fontTablature.getsize(section.tablatures[lineIterator])
@@ -88,7 +87,7 @@ def outputToImage(folderLocation, songObj):
         draw.text((horizontalMargin ,currentHeight), section.lyrics[lineIterator], fill=songObj.fontColour, font=songObj.fontLyrics)
         currentHeight += lyricTextHeight
         lineIterator += 1
-        #print("currentheight={}".format(currentHeight))
+        logging.debug("currentheight={}".format(currentHeight))
       # If we stripped al whitespace, we need to add whitespace between sections
       if not songObj.keepEmptyLines:
         currentHeight += songObj.verticalMargin

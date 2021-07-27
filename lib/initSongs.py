@@ -17,6 +17,7 @@
 import lib.dataStructures
 import lib.config
 import os
+import logging
 
 """!@brief Creates and inits a Song object
     This function creates a new Song object and sets the internal variables correctly
@@ -32,7 +33,7 @@ def initSong(filePath):
   thisSong.outputLocation = filePath[:filePath.rfind('.')]
   # title is just the name of the .txt file
   thisSong.title = thisSong.outputLocation[filePath.rfind('/')+1:]
-  #print("Finished init for input file '{}'.\nBase output folder is '{}'\nSong title is '{}'\n".format(thisSong.inputFile, thisSong.outputLocation, thisSong.title))
+  logging.debug("Finished init for input file '{}'.\nBase output folder is '{}'\nSong title is '{}'\n".format(thisSong.inputFile, thisSong.outputLocation, thisSong.title))
   return thisSong
 
 """!@brief Creates a list of files found in a directory and its subdirectories
@@ -43,7 +44,7 @@ def initSong(filePath):
 """
 def walkDirectory(root, depth):
   pathList = []
-  #print("Walking directory '{}'".format(root))
+  logging.debug("Walking directory '{}'".format(root))
   def do_scan(start_dir,output,depth=2):
       for f in os.listdir(start_dir):
           ff = os.path.join(start_dir,f)
@@ -73,10 +74,10 @@ def getSongObjects():
   for inputFolder in configObj['inputfolders'].split(','):
     for filePath in walkDirectory(inputFolder, recursionDepth):
       if ((filePath[filePath.find('.'):] == ".txt" ) and configObj['readtxt'] == '1') or ((filePath[filePath.find('.'):] == ".rawtxt" ) and configObj['readraw'] == '1'):
-        #print("Found supported file '{}'".format(filePath))
+        logging.debug("Found supported file '{}'".format(filePath))
         txtFileLocations.append(filePath)
-      #else:
-        #print("Skipping file '{}' for it is not a supported file".format(filePath))
+      else:
+        logging.debug("Skipping file '{}' for it is not a supported file".format(filePath))
   # create list of Song objects
   while(txtFileLocations):
     filePath = txtFileLocations.pop()

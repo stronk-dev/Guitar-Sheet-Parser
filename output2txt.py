@@ -8,13 +8,9 @@
 # Generates PNG images of a specific dimension (currently A4) of tablature data
 # Dynamically resizes specific sections to maximize using the entire paper (and avoid awkward page flips)
 #
-# @section notes Notes
-# - 
-#
-# @section todo TODO
-# - Various prints should be printed at specific log levels, to easily switch between debug, info or warnings only
 
 import os
+import logging
 
 """!@brief Exports the song object to a txt file
           Perfect to use as source file for any program which requires
@@ -34,9 +30,9 @@ def outputToTxt(folderLocation, printRaw, songObj):
   # Create target Directory if doesn't exist
   if not os.path.exists(folderLocation):
     os.mkdir(folderLocation)
-    print("Directory " , folderLocation ,  " Created ")
-  #else:    
-    #print("Directory " , folderLocation ,  " already exists")
+    logging.info("Directory {} Created ".format(folderLocation))
+  else:    
+    logging.debug("Directory {} already exists".format(folderLocation))
       
   output = ""
   emptyLines = []
@@ -51,7 +47,7 @@ def outputToTxt(folderLocation, printRaw, songObj):
     # remove any unwanted characters from metadata
     if not songObj.keepEmptyLines and not line:
       continue
-    #print("meta line '{}'".format(line))
+    logging.debug("Metadata '{}'".format(line))
     output += line
     metadataLines.append(lineCounter)
     lineCounter += 1
@@ -67,7 +63,7 @@ def outputToTxt(folderLocation, printRaw, songObj):
     lineIterator = 0
     amountOfLines = len(section.lyrics)
     if (amountOfLines != len(section.tablatures)):
-      print("Cannot write this section to file, since it was not processed correctly. There are {} tablature lines and {} lyric lines. Aborting...".format(len(section.chords), amountOfLines))
+      logging.critical("Cannot write this section to file, since it was not processed correctly. There are {} tablature lines and {} lyric lines. Aborting...".format(len(section.chords), amountOfLines))
       return
     # write section title
     output += section.header.rstrip() + '\r\n'
