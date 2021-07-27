@@ -203,7 +203,9 @@ class Song:
     # Flag for succesfully parsed
     self.isParsed = False
     configObj = lib.config.config['output']
-    self.topMargin = int(configObj['topMargin'])
+    self.verticalMargin = int(configObj['verticalMargin'])
+    self.horizontalMargin = int(configObj['horizontalMargin'])
+    self.extraHorizontalMargin = int(configObj['extraHorizontalMargin'])
     self.fontColour = tuple(int(var) for var in configObj['fontColour'].split(','))
     self.backgroundColour = tuple(int(var) for var in configObj['backgroundColour'].split(','))
     self.metadataColour = tuple(int(var) for var in configObj['metadataColour'].split(','))
@@ -215,8 +217,6 @@ class Song:
     # Since font size is then shrunk and grown to fit whitespace we do not need to be as accurate
     # PPI of 144 -> fontSize of 32
     self.fontSize = int(self.ppi / 4.5)
-    self.leftMargin = int(configObj['leftMargin'])
-    self.rightMargin = int(configObj['rightMargin'])
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
     self.fontFamilyLyrics = configObj['lyricfontfamily']
@@ -248,7 +248,7 @@ class Song:
   """
   def calculateMetadataDimensions(self):
     # metadata starts topMargin removed from top
-    currentHeight = self.topMargin
+    currentHeight = self.verticalMargin
     maxWidth = 0
     for line in self.metadata.split('\n'):
       line = line.rstrip()
@@ -308,8 +308,8 @@ class Song:
   """
   def checkOverflowX(self):
     for section in self.sections:
-      if section.expectedWidth > self.imageWidth - self.leftMargin - self.rightMargin:
-        print("There is an overflow on width: this section has a width of {}, but we have {} ({}-{}-{}) amount of space".format(section.expectedWidth, self.imageWidth - self.leftMargin - self.rightMargin, self.imageWidth, self.leftMargin, self.rightMargin))
+      if section.expectedWidth > self.imageWidth - self.extraHorizontalMargin - self.horizontalMargin - self.horizontalMargin:
+        print("There is an overflow on width: this section has a width of {}, but we have {} ({}-{}-{}*2) amount of space".format(section.expectedWidth, self.imageWidth - self.extraHorizontalMargin - self.horizontalMargin - self.horizontalMargin, self.imageWidth, self.extraHorizontalMargin, self.horizontalMargin))
         return False
     return True
   
@@ -317,7 +317,7 @@ class Song:
     @return True if everything OK, False if overflowing
   """
   def checkOverflowMetadata(self):
-    if self.metadataWidth > self.imageWidth - self.leftMargin - self.rightMargin:
+    if self.metadataWidth > self.imageWidth - self.extraHorizontalMargin - self.horizontalMargin - self.horizontalMargin:
       return False
     return True
 
@@ -331,7 +331,7 @@ class Song:
     self.resizeAllSections(+1)
     self.sectionsToPages()
     currentPageAmount = len(self.pages)
-    # Increase fontSize as long as we do not add a page
+    # Increase fontSize as long as we stay under the target max pages
     while ((currentPageAmount <= targetPageAmount) and self.checkOverflowX()):
       self.resizeAllSections(+1)
       self.sectionsToPages()
@@ -362,7 +362,8 @@ class Song:
     biggestWhitespace = -1
     for page in self.pages:
       for section in page.sections:
-          whitespaceOnWidth = self.imageWidth - self.leftMargin - self.rightMargin - section.expectedWidth
+          # We have 2* horizontal whitespace
+          whitespaceOnWidth = self.imageWidth - self.extraHorizontalMargin - self.horizontalMargin - self.horizontalMargin - section.expectedWidth
           if whitespaceOnWidth < smallestWhitespace:
             smallestWhitespace = whitespaceOnWidth
           if whitespaceOnWidth > biggestWhitespace:
@@ -398,13 +399,13 @@ class Song:
   """
   def sectionsToPages(self):
     # If we are keeping whitespace, don't count the whitespace in between sections
-    sectionWhitespace = self.topMargin
+    sectionWhitespace = self.verticalMargin
     if self.keepEmptyLines:
       sectionWhitespace = 0
     self.prerenderSections()
     self.pages = []
     # First page contains metadata
-    currentHeight = self.topMargin
+    currentHeight = self.verticalMargin
     currentHeight += self.metadataHeight
     currentHeight += sectionWhitespace
     curPage = Page()

@@ -36,11 +36,17 @@ def outputToImage(folderLocation, songObj):
       
   # Init image info
   imageNumber = 1
-  currentHeight = songObj.topMargin
+  currentHeight = songObj.verticalMargin
 
   # New Image
   a4image = Image.new('RGB',(songObj.imageWidth, songObj.imageHeight),(songObj.backgroundColour))
   draw = ImageDraw.Draw(a4image)
+
+  # Add extra whitespace on the left if this is an even page
+  # The whitespace on the right for uneven pages is handled elsewhere, by limiting the maximum horizontal size
+  horizontalMargin = songObj.horizontalMargin
+  if (imageNumber % 2) == 0:
+    horizontalMargin += songObj.extraHorizontalMargin
   
   # Write metadata
   for line in songObj.metadata.split('\n'):
@@ -50,12 +56,12 @@ def outputToImage(folderLocation, songObj):
       continue
     #print("meta line '{}'".format(line))
     metadataTextWidth, metadataTextHeight = songObj.fontMetadata.getsize(line)
-    draw.text((songObj.leftMargin,currentHeight), line, fill=songObj.metadataColour, font=songObj.fontMetadata)
+    draw.text((horizontalMargin, currentHeight), line, fill=songObj.metadataColour, font=songObj.fontMetadata)
     currentHeight += metadataTextHeight
   # Draw all pages
   for page in songObj.pages:
     # Margin between metadata and the first section / section and top of page
-    currentHeight += songObj.topMargin
+    currentHeight += songObj.verticalMargin
     for section in page.sections:
       # Reset section specific variables
       lineIterator = 0
@@ -68,7 +74,7 @@ def outputToImage(folderLocation, songObj):
         return
       # write section title
       headerWidth, headerHeight = songObj.fontTablature.getsize(section.header)
-      draw.text((songObj.leftMargin,currentHeight), section.header, fill=songObj.fontColour, font=songObj.fontTablature)
+      draw.text((horizontalMargin ,currentHeight), section.header, fill=songObj.fontColour, font=songObj.fontTablature)
       currentHeight += headerHeight
       # Write each line tablature&lyric data
       while lineIterator < amountOfLines:
@@ -77,22 +83,27 @@ def outputToImage(folderLocation, songObj):
         lyricTextWidth, lyricTextHeight = songObj.fontLyrics.getsize(section.lyrics[lineIterator])
         tablatureTextWidth, tablatureTextHeight = songObj.fontTablature.getsize(section.tablatures[lineIterator])
         # add to image file
-        draw.text((songObj.leftMargin,currentHeight), section.tablatures[lineIterator], fill=songObj.fontColour,  font=songObj.fontTablature)
+        draw.text((horizontalMargin ,currentHeight), section.tablatures[lineIterator], fill=songObj.fontColour,  font=songObj.fontTablature)
         currentHeight += tablatureTextHeight
-        draw.text((songObj.leftMargin,currentHeight), section.lyrics[lineIterator], fill=songObj.fontColour, font=songObj.fontLyrics)
+        draw.text((horizontalMargin ,currentHeight), section.lyrics[lineIterator], fill=songObj.fontColour, font=songObj.fontLyrics)
         currentHeight += lyricTextHeight
         lineIterator += 1
         #print("currentheight={}".format(currentHeight))
       # If we stripped al whitespace, we need to add whitespace between sections
       if not songObj.keepEmptyLines:
-        currentHeight += songObj.topMargin
+        currentHeight += songObj.verticalMargin
     # Got all sections in the page, so write it
     outputLocation = folderLocation + "/" + songObj.title + '-' + str(imageNumber) + ".png"
     a4image.save(outputLocation)
     a4image = Image.new('RGB',(songObj.imageWidth, songObj.imageHeight),(songObj.backgroundColour))
     draw = ImageDraw.Draw(a4image)
-    currentHeight = songObj.topMargin
+    currentHeight = songObj.verticalMargin
     imageNumber += 1
+    # Add extra whitespace on the left if this is an even page
+    # The whitespace on the right for uneven pages is handled elsewhere, by limiting the maximum horizontal size
+    horizontalMargin = songObj.horizontalMargin
+    if (imageNumber % 2) == 0:
+      horizontalMargin += songObj.extraHorizontalMargin
     
   
   

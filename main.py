@@ -75,8 +75,12 @@ def main():
       # Prerender: calculate Pages, and move sections into Pages
       song.sectionsToPages()
       # Optimalisation: try to fill whitespace
-      while song.canFillWhitespace() or len(song.pages) > song.maxPages:
-        print("Resizing down to fit whitespace more efficiently")
+      while len(song.pages) > song.maxPages:
+        print("Resizing down since we have {} pages and want {} pages".format(len(song.pages), song.maxPages))
+        song.resizeAllSections(-1)
+        song.sectionsToPages()
+      while song.canFillWhitespace():
+        print("Resizing down to fill remaining vertical whitespace")
         song.resizeAllSections(-1)
         song.sectionsToPages()
       # Optimalisation: increase font size to fit target page amount

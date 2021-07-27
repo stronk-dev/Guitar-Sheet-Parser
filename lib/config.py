@@ -30,7 +30,7 @@ def initConfig():
   # Else load defaults
   else:
     config['input'] = {'inputFolders': os.getcwd(),
-        'maxDepth': 2,
+        'maxDepth': 1,
         'readtxt': 1,
         'readraw': 1
       }
@@ -46,9 +46,9 @@ def initConfig():
         'backgroundColour': '255,255,255',
         'fontColour': '0,0,0',
         'metadataColour': '128,128,128',
-        'topMargin': 50,
-        'leftMargin': 100,
-        'rightMargin': 50,
+        'verticalMargin': 50,
+        'horizontalMargin': 100,
+        'extraHorizontalMargin': 100,
         'tryToShrinkRatio' : 0.4,
         'lowestwhitespaceonwidthratioallowed': 0.90,
         'highestwhitespaceonwidthratioallowed': 0.40,
