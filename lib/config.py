@@ -54,7 +54,8 @@ def initConfig():
         'highestwhitespaceonwidthratioallowed': 0.40,
         'keepEmptyLines': 1,
         'writeheaderfile': 0,
-        'minPages': 2
+        'minPages': 2,
+        'maxPages': 4
     }
   # (if CMD arguments: load CMD arguments to override specific settings)
   with open('config.ini', 'w') as configfile:

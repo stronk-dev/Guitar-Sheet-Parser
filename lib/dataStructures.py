@@ -239,6 +239,7 @@ class Song:
     self.writeMetadata = configObj['writeheaderfile'] == '1'
     # Don't go under this number
     self.minPages = int(configObj['minPages'])
+    self.maxPages = max(int(configObj['minPages']), int(configObj['maxPages']))
 
 
   """!@brief Calculates dimensions of metadata
@@ -320,10 +321,10 @@ class Song:
       return False
     return True
 
-  """!@brief Checks whether we can increase the font size without creating more pages
+  """!@brief Resizes the page to fit reminaing whitespace, and increases the number of pages to stay above the minimum amount of pages
     @return None
   """
-  def increaseWhileSameAmountOfPages(self):
+  def increaseToMinPages(self):
     targetPageAmount = max(len(self.pages), self.minPages)
     originalFontsize = self.fontSize
     print("Starting font size increase with {} pages and {} font size".format(targetPageAmount, originalFontsize))

@@ -75,12 +75,12 @@ def main():
       # Prerender: calculate Pages, and move sections into Pages
       song.sectionsToPages()
       # Optimalisation: try to fill whitespace
-      while song.canFillWhitespace():
+      while song.canFillWhitespace() or len(song.pages) > song.maxPages:
         print("Resizing down to fit whitespace more efficiently")
         song.resizeAllSections(-1)
         song.sectionsToPages()
-      # Optimalisation: increase font size as long as the amount of pages does not increase or we cause an overflow on width
-      song.increaseWhileSameAmountOfPages()
+      # Optimalisation: increase font size to fit target page amount
+      song.increaseToMinPages()
       # Parse as PNG a4
       # Create subdirectory where we will output our images
       targetDirectory = song.outputLocation + "-a4-png"
