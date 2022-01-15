@@ -98,6 +98,7 @@ class Section:
     heightSum = 0
     maxWidth = 0
     # consider section title
+    logging.debug("Init size with header '{}'".format(self.header))
     headerWidth, headerHeight = fontTablature.getsize(self.header)
     heightSum += headerHeight
     maxWidth = headerWidth
@@ -107,10 +108,13 @@ class Section:
       tablatureTextWidth, chordTextHeight = fontTablature.getsize(self.tablatures[lineIterator])
       heightSum += lyricTextHeight + chordTextHeight
       if lyricTextWidth > maxWidth:
+        logging.debug("Found line '{}' with a width of {}".format(self.lyrics[lineIterator], lyricTextWidth))
         maxWidth = lyricTextWidth
       if tablatureTextWidth > maxWidth:
+        logging.debug("Found line '{}' with a width of {}".format(self.tablatures[lineIterator], tablatureTextWidth))
         maxWidth = tablatureTextWidth
       lineIterator += 1
+    logging.debug("Setting section to W:{} H:{}".format(maxWidth, heightSum))
     self.expectedWidth = maxWidth
     self.expectedHeight = heightSum
     
@@ -213,7 +217,7 @@ class Song:
     # With a PPI of 72, a font size of 14-18 is a good starting point (PPI / 4 or 4.5)
     # Since font size is then shrunk and grown to fit whitespace we do not need to be as accurate
     # PPI of 144 -> fontSize of 32
-    self.fontSize = int(self.ppi / 4.5)
+    self.fontSize = int(self.ppi / 4)
     self.fontLyrics = ImageFont.truetype(configObj['lyricfontfamily'], self.fontSize)
     self.fontTablature = ImageFont.truetype(configObj['tablaturefontfamliy'], self.fontSize)
     self.fontFamilyLyrics = configObj['lyricfontfamily']
@@ -254,6 +258,7 @@ class Song:
         continue
       metadataTextWidth, metadataTextHeight = self.fontMetadata.getsize(line)
       if metadataTextWidth > maxWidth:
+        logging.debug("Found line '{}' with a width of {}".format(line, metadataTextWidth))
         maxWidth = metadataTextWidth
       currentHeight += metadataTextHeight
     self.metadataWidth = maxWidth
@@ -380,6 +385,10 @@ class Song:
     # Make sure the longest lines fill the page enough
     if smallestWhitespace / imageWidthWithoutMargins > self.longestLineWhitespaceRatioAllowed:
       logging.debug("Stopping resizing down, since we largest section has {}% whitespace on the width of the image".format((smallestWhitespace / imageWidthWithoutMargins )* 100))
+      return False
+    # Make sure the longest lines fill the page enough
+    if self.fontSize < int(self.ppi / 6):
+      logging.debug("Stopping resizing down, since the font size is becoming too small at {}".format(self.fontSize))
       return False
     # get first section on next page, if we have a next page to begin with
     while currentPageIt < amountOfPages - 1:
